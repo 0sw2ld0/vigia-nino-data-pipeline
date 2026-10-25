@@ -42,7 +42,10 @@ jobs:
               for q in feed["quebradas"]:
                   obs = q["observation"]
                   out.write(f"- {q['name']}: lluvia máxima {obs['rain_rate_max_mmh']} mm/h; barrido {obs['scan_time_utc']}; estado {q['status']['level']}.\n")
-              out.write("\nAvisos oficiales: enlaces únicamente; su ingestión aún no está implementada.\n")
+                  notice = q.get("official_notice")
+                  if notice:
+                      out.write(f"  - SENAMHI {notice['level']}: {notice['geographic_scope']}; vence {notice['valid_until_utc']}.\n")
+              out.write(f"\nVerificación de avisos: {report['official_notices']['state']}. Independiente de la lluvia satelital.\n")
           PY
       - name: Preparar publicación
         run: touch public/.nojekyll
