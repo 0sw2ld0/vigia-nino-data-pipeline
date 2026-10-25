@@ -62,6 +62,7 @@ class RainResult:
     scan_time: datetime | None
     s3_key: str | None
     per_area: dict[str, RainStats | None]
+    overlay: tuple[dict, bytes] | None = None
 
 
 def area_rain_stats(
@@ -146,7 +147,13 @@ def rain_from_key(fs, key: str, areas: list[Area]) -> RainResult:
             xx, yy = np.meshgrid(ds['x'].values[cols]*h,ds['y'].values[rows]*h)
             lon, lat = inverse.transform(xx,yy)
             per_area = batch_rain_stats(rain,dqf,np.asarray(lon),np.asarray(lat),areas)
-            return RainResult(scan_time=_parse_iso(ds.attrs['time_coverage_end']),s3_key=key,per_area=per_area)
+            try:
+                import rain_overlay
+                overlay = rain_overlay.from_dataset(ds,transformer,h,key)
+            except Exception as exc:
+                print(f'::warning::Capa de lluvia no disponible: {exc!r}')
+                overlay = None
+            return RainResult(scan_time=_parse_iso(ds.attrs['time_coverage_end']),s3_key=key,per_area=per_area,overlay=overlay)
         for area in areas:
             rows, cols = _window(ds, transformer, h, area)
             rain = ds["RRQPE"][rows, cols].values.astype("float64")

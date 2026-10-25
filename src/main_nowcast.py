@@ -202,6 +202,12 @@ def main() -> int:
     write_atomic(args.out / "status_lima.json", regional_feed)
     write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
     write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)
+    if rain.overlay:
+        overlay_manifest, overlay_png = rain.overlay
+        (args.out / overlay_manifest['image']).write_bytes(overlay_png)
+        write_atomic(args.out / 'rain_overlay.json', overlay_manifest)
+    else:
+        write_atomic(args.out / 'rain_overlay.json', {'version':1,'state':'UNAVAILABLE','scan_time_utc':None,'context':'No current satellite raster available; missing data is not zero rainfall.'})
     calibration_report = calibration.evaluate_windows([])
     calibration_report['scope'] = 'Lima: documented positives exist; no reviewed paired rainfall evaluation windows or negatives available'
     try:
