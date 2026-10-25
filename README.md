@@ -225,3 +225,11 @@ barrido produjo lluvia y rayos para los 12.462 tramos, sin lluvias importantes d
 y conservó los 1.799 avisos asociados. Son resultados fechados, no condiciones permanentes.
 `run_report.json` publica ahora `observation_timings_seconds`, conteos de tramos con datos
 y distribución de niveles de lluvia, por separado de los niveles oficiales.
+
+La [prueba publicada con lluvia regional](https://github.com/0sw2ld0/vigia-nino-data-pipeline/actions/runs/40155725397)
+terminó correctamente: **40,91 s** de procesamiento y **102 s** desde la creación del
+workflow hasta terminar el despliegue. Preparar franjas tomó 3,248 s, RRQPE 1,794 s y
+GLM 31,965 s. Se verificaron 12.462 lecturas de lluvia y rayos, conservando los niveles
+oficiales independientes. El JSON comprimido transfirió 262.139 bytes en la comprobación.
+El tiempo dominante fue la descarga y lectura de GLM; se mantiene en Actions para que
+la observación satelital continúe aunque el Mac duerma. No fue necesario moverla al Mac.
