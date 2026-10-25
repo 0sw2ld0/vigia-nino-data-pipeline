@@ -28,6 +28,7 @@ import watersheds
 import exposure
 import calibration
 import historical_events
+import fire_hotspots
 from areas import Area, load_areas
 
 
@@ -123,6 +124,15 @@ def main() -> int:
         warn(f"RRQPE no disponible: {exc!r}")
         rain = goes.RainResult(scan_time=None, s3_key=None, per_area={a.id: None for a in observation_areas})
     rain_seconds = time.monotonic()-rain_started
+
+    fire_started = time.monotonic()
+    try:
+        fire_feed = fire_hotspots.fetch(fs, config.ROOT, now)
+    except Exception as exc:
+        warn(f'Focos de calor no disponibles: {exc!r}')
+        fire_feed = fire_hotspots.empty(now)
+    fire_seconds = time.monotonic() - fire_started
+    write_atomic(args.out/'fire_hotspots.json', fire_feed)
 
     lightning_started = time.monotonic()
     try:
@@ -225,6 +235,7 @@ def main() -> int:
     write_atomic(args.out / "run_report.json", {
         "processed_at_utc": iso(now), "finished_at_utc": iso(datetime.now(timezone.utc)),
         "processing_seconds": round(time.monotonic() - started, 2),
+        "fire_hotspots": {"state":fire_feed["state"], "scan_time_utc":fire_feed["scan_time_utc"], "detections":len(fire_feed["detections"]), "regions":fire_feed["regions"], "processing_seconds":round(fire_seconds,3)},
         "scope": args.region or "all configured regions", "area_ids": [a.id for a in areas],
         "geometry_status": "PROVISIONAL", "thresholds_status": "UNCALIBRATED",
         "rrqpe_s3_key": rain.s3_key, "rain_scan_time_utc": iso(rain.scan_time),
