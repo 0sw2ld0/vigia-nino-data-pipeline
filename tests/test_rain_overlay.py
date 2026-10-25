@@ -77,3 +77,17 @@ def test_default_raster_scope_contains_all_three_pilot_departments_without_finer
     projection=Transformer.from_crs(4326,3857,always_xy=True)
     x0,y0=projection.transform(*BOUNDS[:2]);x1,y1=projection.transform(*BOUNDS[2:])
     assert max(math.ceil((x1-x0)/2000),math.ceil((y1-y0)/2000)) <= 1024
+
+
+def test_regional_rain_counts_do_not_mistake_rain_elsewhere_for_northern_rain():
+    import xarray as xr
+    from pyproj import Transformer
+    from rain_overlay import from_dataset, BOUNDS
+    projection=Transformer.from_crs(4326,3857,always_xy=True)
+    x0,y0=projection.transform(*BOUNDS[:2]);x1,y1=projection.transform(*BOUNDS[2:])
+    ds=xr.Dataset({'RRQPE':(('y','x'),np.array([[0.,2.],[0.,2.]])), 'DQF':(('y','x'),np.zeros((2,2)))},coords={'x':[x0,x1],'y':[y1,y0]},attrs={'time_coverage_end':'2026-10-25T00:00:00Z'})
+    manifest,_=from_dataset(ds,projection,1.,'synthetic-regional-test')
+    counts=manifest['regional_rainy_pixel_counts']
+    assert counts['Piura']==counts['Tumbes']==0
+    assert counts['Lima']>0
+    assert manifest['rainy_pixel_count']>counts['Lima']

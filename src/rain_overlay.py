@@ -1,5 +1,10 @@
 """Web-Mercator aligned GOES rainfall image. No interpolation, inferred risk or fake rain."""
 import hashlib
+import gzip
+import json
+from pathlib import Path
+from shapely import contains_xy
+from shapely.geometry import shape
 import math
 import struct
 import zlib
@@ -59,4 +64,15 @@ def from_dataset(ds,geos_transformer,height,s3_key,bounds=BOUNDS,resolution_m=20
     rgba,good=colorize(rain,quality)
     payload=png_rgba(rgba);digest=hashlib.sha256(payload).hexdigest()
     manifest=dict(version=1,state='AVAILABLE',source='NOAA GOES-19 · ABI RRQPE',source_key=s3_key,scan_time_utc=ds.attrs['time_coverage_end'],stale_after_minutes=60,image=f'rain-{digest[:16]}.png',sha256=digest,bounds=bounds,projection='EPSG:3857',width=width,height=rows,resampling='NEAREST_NATIVE_PIXEL',nominal_source_resolution_m=2000,valid_pixel_fraction=round(float(good.mean()),6),rainy_pixel_count=int((good&(rain>=.1)).sum()),legend=[dict(min_mmh=t,rgba=c) for t,c in PALETTE],context='Instantaneous satellite rainfall estimate, not radar, accumulated rainfall, warning level or inundation extent. Transparent: <0.1 mm/h with valid data; gray: no valid data; outside image: not covered.')
+    regional_counts = {}
+    for name in ('lima_boundary.geojson.gz', 'north_boundary.geojson.gz'):
+        path = Path(__file__).resolve().parents[1]/'data_static'/name
+        if not path.exists():
+            continue
+        for feature in json.loads(gzip.decompress(path.read_bytes()))['features']:
+            region = (feature['properties'].get('nombdpto') or feature['properties'].get('NM_DEPA')).title()
+            mask = contains_xy(shape(feature['geometry']), lon, lat)
+            if mask.any():
+                regional_counts[region] = int((mask & good & (rain >= .1)).sum())
+    manifest['regional_rainy_pixel_counts'] = regional_counts
     return manifest,payload
