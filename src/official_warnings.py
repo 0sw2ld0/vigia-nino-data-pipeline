@@ -1,5 +1,6 @@
 """SENAMHI advisory sectors, kept separate from observed rain and flood extents."""
 import html
+import gzip
 import json
 import re
 from datetime import datetime, timedelta, timezone
@@ -95,3 +96,23 @@ def fetch_notices(channels_path, now):
     channels = json.loads(channels_path.read_text())
     notices = assign_notices(metadata,collection,channels,now)
     return notices, {**report,'state':'verified','source_features':len(collection['features']),'assigned_zones':sorted(notices)}
+
+
+def read_verified_snapshot(path, channels_path, now):
+    """A dated, manually checked official snapshot; never refresh its verification time on read."""
+    snapshot = json.loads(gzip.decompress(path.read_bytes()))
+    retrieved = datetime.fromisoformat(snapshot['retrieved_at_utc'].replace('Z','+00:00'))
+    if not 0 <= (now - retrieved).total_seconds() <= 6 * 3600:
+        raise ValueError('Official backup is older than the six-hour verification limit')
+    m = snapshot['metadata']
+    metadata = {**m,'from':datetime.fromisoformat(m['from'].replace('Z','+00:00')).astimezone(LIMA_TZ),
+        'until':datetime.fromisoformat(m['until'].replace('Z','+00:00')).astimezone(LIMA_TZ)}
+    if not metadata['from'] <= now < metadata['until']:
+        raise ValueError('Official backup is outside advisory validity')
+    notices = assign_notices(metadata, snapshot['collection'], json.loads(channels_path.read_text()), now)
+    stamp = retrieved.astimezone(LIMA_TZ).strftime('%d/%m/%Y %H:%M')
+    for notice in notices.values():
+        notice['body'] += f' Copia oficial verificada el {stamp} (hora de Perú); consulta directa temporalmente no disponible.'
+    return notices, {'state':'verified_snapshot','id':metadata['id'],'source':PAGE_URL,
+        'source_retrieved_at_utc':iso(retrieved),'valid_from_utc':iso(metadata['from']),'valid_until_utc':iso(metadata['until']),
+        'snapshot_max_age_hours':6,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features'])}

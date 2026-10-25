@@ -43,3 +43,16 @@ def test_missing_or_ambiguous_dates_are_not_guessed():
 def test_archived_numbers_in_page_header_cannot_override_current_advisory():
     page='N°044-2020 <article><h1 class="aviso-vigente">Aviso actual</h1>'+PAGE+'</article>'
     assert o.parse_metadata(page)['id']=='SENAMHI-AQ-2026-297'
+
+
+def test_verified_snapshot_does_not_extend_validity_or_verification_time(tmp_path):
+    import gzip, json
+    d,c=fixture(); channels=tmp_path/'channels.json';channels.write_text(json.dumps(c))
+    cache=tmp_path/'cache.json.gz'
+    payload={'retrieved_at_utc':'2026-10-25T00:00:00Z','metadata':{'id':'TEST','number':'297','from':'2026-10-24T18:00:00Z','until':'2026-10-25T18:00:00Z'},'collection':d}
+    cache.write_bytes(gzip.compress(json.dumps(payload).encode()))
+    notices,report=o.read_verified_snapshot(cache,channels,NOW)
+    assert notices['TEST']['level']=='ORANGE' and report['state']=='verified_snapshot'
+    assert report['source_retrieved_at_utc']=='2026-10-25T00:00:00Z'
+    for later in [datetime(2026,10,25,7,tzinfo=timezone.utc),datetime(2026,10,25,18,tzinfo=timezone.utc)]:
+        with pytest.raises(ValueError):o.read_verified_snapshot(cache,channels,later)

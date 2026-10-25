@@ -122,8 +122,15 @@ def main() -> int:
     try:
         notices, notice_report = official_warnings.fetch_notices(config.ROOT / "data_static" / "monitored_channels.geojson", now)
     except Exception as exc:
-        warn(f"Avisos SENAMHI no verificables: {exc!r}")
-        notices, notice_report = {}, {"state":"unavailable", "assigned_zones":[]}
+        warn(f"Consulta directa SENAMHI no disponible: {exc!r}")
+        try:
+            notices, notice_report = official_warnings.read_verified_snapshot(
+                config.ROOT / "data_static" / "senamhi_verified_snapshot.json.gz",
+                config.ROOT / "data_static" / "monitored_channels.geojson", now)
+            warn("Se utiliza respaldo oficial con fecha de consulta original y vencimiento, no una consulta en directo.")
+        except Exception as backup_exc:
+            warn(f"Sin respaldo vigente: {backup_exc!r}")
+            notices, notice_report = {}, {"state":"unavailable", "assigned_zones":[]}
     feed = build_feed(areas, now, rain, lightning, accum, notices)
     if args.region:
         for q in feed["quebradas"]:
