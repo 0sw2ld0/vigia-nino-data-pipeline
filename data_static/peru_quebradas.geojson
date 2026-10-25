@@ -120,6 +120,48 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "LIM-YAU-PISOCANCHA",
+        "name": "Quebrada Pisocancha",
+        "region": "Lima",
+        "district": "Tanta · Yauyos",
+        "threshold_profile": "SIERRA_LIMA",
+        "centroid_lat": -12.158964,
+        "centroid_lon": -76.0085,
+        "geometry_status": "PROVISIONAL",
+        "geometry_description": "Caja de muestreo alrededor del tramo IGN 343130, ampliada 0.015 grados. No es una cuenca delimitada ni un área de afectación.",
+        "source_channel_objectid": 343130
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -75.985,
+              -12.18022
+            ],
+            [
+              -75.985,
+              -12.13458
+            ],
+            [
+              -76.02853,
+              -12.13458
+            ],
+            [
+              -76.02853,
+              -12.18022
+            ],
+            [
+              -75.985,
+              -12.18022
+            ]
+          ]
+        ]
+      }
     }
   ]
 }

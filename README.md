@@ -1,13 +1,13 @@
 # Vigía El Niño — Pipeline de datos
 
-El piloto público está en [0sw2ld0/vigia-nino-data-pipeline](https://github.com/0sw2ld0/vigia-nino-data-pipeline). El workflow procesa **solo Lima**, actualmente el área provisional de **Quirio**, con `--region Lima`. Los cauces nacionales y las apps se conservan aparte. Este piloto no necesita claves de NOAA u Open-Meteo.
+El piloto público está en [0sw2ld0/vigia-nino-data-pipeline](https://github.com/0sw2ld0/vigia-nino-data-pipeline). El workflow procesa **solo Lima**, actualmente **Quirio y Pisocancha (Tanta, Yauyos)** con áreas de muestreo provisionales, con `--region Lima`. Los cauces nacionales y las apps se conservan aparte. Este piloto no necesita claves de NOAA u Open-Meteo.
 
 Endpoints de GitHub Pages:
 
 - [`v1/status_quebradas.json`](https://0sw2ld0.github.io/vigia-nino-data-pipeline/v1/status_quebradas.json): contrato consumido por las apps.
 - [`v1/run_report.json`](https://0sw2ld0.github.io/vigia-nino-data-pipeline/v1/run_report.json): duración, tamaño del JSON, barrido satelital y cobertura de fuentes.
 
-El cron solicita una ejecución a los minutos 7, 22, 37 y 52; GitHub puede retrasarla y desactiva las programaciones de repositorios públicos tras 60 días sin actividad. No se garantiza puntualidad. Los avisos oficiales se ofrecen **solo como enlaces**; no hay ingestión de boletines ni notificaciones push. El acumulado de Open-Meteo es información de modelo, no una medición de pluviómetro.
+El cron solicita una ejecución a los minutos 7, 22, 37 y 52; GitHub puede retrasarla y desactiva las programaciones de repositorios públicos tras 60 días sin actividad. No se garantiza puntualidad. El piloto consulta la página vigente y la capa WFS de avisos SENAMHI. Solo asocia un aviso a un tramo IGN si la fecha coincide con la vigencia verificada y al menos el 90 % del tramo está dentro de sectores del mismo nivel. Los polígonos oficiales son sectores de aviso: no son manchas de inundación ni cuencas de observación. La ausencia de una asociación no demuestra ausencia de peligro. No hay notificaciones push. El acumulado de Open-Meteo es información de modelo, no una medición de pluviómetro.
 
 Cada 15 minutos genera `v1/status_quebradas.json` (contrato en [`contract/`](contract/)) y lo publica en GitHub Pages para las apps iOS y Android.
 
@@ -56,7 +56,7 @@ Esta carpeta está pensada para ser su propio repositorio público (`vigia-nino-
 
 ## Pendiente antes de usarlo para alertas
 
-- **Polígonos provisionales.** Las 3 cajas de `data_static/peru_quebradas.geojson` (`geometry_status: PROVISIONAL`) son aproximadas; hay que reemplazarlas por las cabeceras de cuenca reales (ANA / INGEMMET).
+- **Polígonos provisionales.** Las 4 cajas de `data_static/peru_quebradas.geojson` (`geometry_status: PROVISIONAL`) son aproximadas; hay que reemplazarlas por las cabeceras de cuenca reales (ANA / INGEMMET).
 - **Umbrales sin calibrar.** Cada quebrada usa un perfil regional (`threshold_profile` en el GeoJSON → `config.THRESHOLD_PROFILES`: `SIERRA_LIMA`, `COSTA_NORTE`). Por ahora los perfiles tienen los mismos valores; hay que calibrar cada uno con el backtest antes de activar avisos Push. Para agregar una región nueva, crea el perfil en `config.py` y asígnalo en el GeoJSON (si el perfil no existe, el pipeline no arranca).
 - RRQPE subestima la lluvia cálida de la costa y los Andes: un verde significa "el satélite no ve lluvia fuerte", no "zona segura".
 
@@ -64,3 +64,12 @@ Esta carpeta está pensada para ser su propio repositorio público (`vigia-nino-
 ## Exportación desde el repositorio privado
 
 `tools/export_public_pipeline.py`, en el repositorio de las apps, copia únicamente la lista permitida de fuentes, contratos, pruebas, backtest y documentación del pipeline a una carpeta nueva. No copia aplicaciones, cartografía nacional, entornos, credenciales ni historial del repositorio privado. El repositorio público tiene historial independiente. Después de modificar el pipeline en el monorepositorio privado, volver a exportar y publicar un commit de esos archivos en el repositorio público; no hay sincronización automática del código entre ambos.
+
+
+## Aviso oficial y lluvia son independientes
+
+`official_notice` es opcional y se publica por zona, separado de `status` (observación experimental de lluvia). Incluye fuente, nivel SENAMHI, vigencia UTC, ámbito administrativo y fracción del tramo cubierto. Si la página no permite verificar la vigencia, la capa está incompleta, su fecha no coincide o la fuente falla, se publica `null` y el informe registra la falta de verificación. Al vencer, no se conserva como activo. Las apps también verifican la vigencia por su cuenta, incluso si están sin conexión.
+
+Prueba del 24/10/2026: el aviso N.º 297 está vigente de las 13:00 del 24 a las 13:00 del 25 de octubre (Perú). De sus 432 sectores en Lima, 202 tienen nivel naranja y 230 amarillo; estos conteos no equivalen a quebradas únicas. El tramo IGN 343130, llamado PISOCANCHA, queda completamente dentro de un sector naranja en Tanta, Yauyos. El boletín nombra sectores y distritos, no esa quebrada individualmente: la asociación es por intersección espacial. Los tramos locales de Quirio y Huaycoloro no intersectan esa capa. Es una comprobación fechada, no una afirmación permanente.
+
+Pisocancha usa una caja de muestreo alrededor del tramo (margen de 0,015°), expresamente provisional. Ni esa caja ni el sector del aviso se presentan como área de afectación. Puede coexistir un aviso oficial naranja con una lectura satelital de cero: describen información y ventanas temporales distintas, y el aviso no se rebaja por la lectura.

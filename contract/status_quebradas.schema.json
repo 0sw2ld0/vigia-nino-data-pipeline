@@ -4,18 +4,39 @@
   "title": "Vigía El Niño — status_quebradas.json",
   "description": "Archivo que publica el pipeline en GitHub Pages y que leen las apps iOS y Android. Un valor null significa 'sin dato', nunca 'cero'.",
   "type": "object",
-  "required": ["schema_version", "processed_at_utc", "stale_after_minutes", "official_links", "quebradas"],
+  "required": [
+    "schema_version",
+    "processed_at_utc",
+    "stale_after_minutes",
+    "official_links",
+    "quebradas"
+  ],
   "properties": {
-    "schema_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$"
+    },
     "min_app_version": {
       "description": "Si la versión instalada es menor, la app pide actualizar.",
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
-        "ios": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
-        "android": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+        "ios": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "android": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
       }
     },
-    "processed_at_utc": { "type": "string", "format": "date-time" },
+    "processed_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
     "stale_after_minutes": {
       "description": "Si la lectura satelital de una quebrada es más antigua que esto, la app la muestra como desactualizada (gris).",
       "type": "integer",
@@ -24,23 +45,53 @@
     },
     "global_notice": {
       "description": "Aviso general editable sin publicar una nueva versión de la app.",
-      "type": ["object", "null"],
-      "required": ["severity", "title", "body"],
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "severity",
+        "title",
+        "body"
+      ],
       "properties": {
-        "severity": { "enum": ["INFO", "WARNING"] },
-        "title": { "type": "string" },
-        "body": { "type": "string" },
-        "url": { "type": ["string", "null"], "format": "uri" }
+        "severity": {
+          "enum": [
+            "INFO",
+            "WARNING"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        }
       }
     },
     "official_links": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["title", "url"],
+        "required": [
+          "title",
+          "url"
+        ],
         "properties": {
-          "title": { "type": "string" },
-          "url": { "type": "string", "format": "uri" }
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
         }
       }
     },
@@ -48,39 +99,172 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "region", "district", "centroid", "observation", "status"],
+        "required": [
+          "id",
+          "name",
+          "region",
+          "district",
+          "centroid",
+          "observation",
+          "status"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[A-Z]{3}-[A-Z]{3}-[A-Z0-9]+$" },
-          "name": { "type": "string" },
-          "region": { "type": "string" },
-          "district": { "type": "string" },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}-[A-Z]{3}-[A-Z0-9]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "district": {
+            "type": "string"
+          },
           "centroid": {
             "type": "object",
-            "required": ["lat", "lon"],
+            "required": [
+              "lat",
+              "lon"
+            ],
             "properties": {
-              "lat": { "type": "number", "minimum": -18.6, "maximum": 0.1 },
-              "lon": { "type": "number", "minimum": -81.6, "maximum": -68.4 }
+              "lat": {
+                "type": "number",
+                "minimum": -18.6,
+                "maximum": 0.1
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -81.6,
+                "maximum": -68.4
+              }
             }
           },
           "observation": {
             "type": "object",
-            "required": ["scan_time_utc", "source"],
+            "required": [
+              "scan_time_utc",
+              "source"
+            ],
             "properties": {
-              "scan_time_utc": { "type": ["string", "null"], "format": "date-time" },
-              "source": { "type": "string" },
-              "rain_rate_max_mmh": { "type": ["number", "null"], "minimum": 0 },
-              "rain_rate_mean_mmh": { "type": ["number", "null"], "minimum": 0 },
-              "lightning_flashes_15m": { "type": ["integer", "null"], "minimum": 0 },
-              "rain_accum_72h_mm": { "type": ["number", "null"], "minimum": 0 }
+              "scan_time_utc": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "source": {
+                "type": "string"
+              },
+              "rain_rate_max_mmh": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "rain_rate_mean_mmh": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "lightning_flashes_15m": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "rain_accum_72h_mm": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              }
             }
           },
           "status": {
             "type": "object",
-            "required": ["level", "headline", "advice"],
+            "required": [
+              "level",
+              "headline",
+              "advice"
+            ],
             "properties": {
-              "level": { "enum": ["GREEN", "YELLOW", "RED", "UNKNOWN"] },
-              "headline": { "type": "string" },
-              "advice": { "type": "string" }
+              "level": {
+                "enum": [
+                  "GREEN",
+                  "YELLOW",
+                  "RED",
+                  "UNKNOWN"
+                ]
+              },
+              "headline": {
+                "type": "string"
+              },
+              "advice": {
+                "type": "string"
+              }
+            }
+          },
+          "official_notice": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "required": [
+              "id",
+              "level",
+              "title",
+              "body",
+              "url",
+              "valid_from_utc",
+              "valid_until_utc",
+              "geographic_scope",
+              "channel_coverage_fraction"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "level": {
+                "enum": [
+                  "YELLOW",
+                  "ORANGE",
+                  "RED"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "valid_from_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "valid_until_utc": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "geographic_scope": {
+                "type": "string"
+              },
+              "channel_coverage_fraction": {
+                "type": "number",
+                "minimum": 0.9,
+                "maximum": 1
+              }
             }
           }
         }

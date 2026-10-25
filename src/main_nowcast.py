@@ -19,6 +19,7 @@ import s3fs
 import config
 import goes
 import openmeteo
+import official_warnings
 import risk
 from areas import Area, load_areas
 
@@ -38,6 +39,7 @@ def build_feed(
     rain: goes.RainResult,
     lightning: dict[str, int | None],
     accum: dict[str, float | None],
+    official_notices: dict | None = None,
 ) -> dict:
     quebradas = []
     for area in areas:
@@ -63,6 +65,7 @@ def build_feed(
                     "rain_accum_72h_mm": accum.get(area.id),
                 },
                 "status": status.as_dict(),
+                "official_notice": (official_notices or {}).get(area.id),
             }
         )
 
@@ -116,11 +119,19 @@ def main() -> int:
 
     accum = openmeteo.fetch_rain_72h(areas, now)
 
-    feed = build_feed(areas, now, rain, lightning, accum)
+    try:
+        notices, notice_report = official_warnings.fetch_notices(config.ROOT / "data_static" / "monitored_channels.geojson", now)
+    except Exception as exc:
+        warn(f"Avisos SENAMHI no verificables: {exc!r}")
+        notices, notice_report = {}, {"state":"unavailable", "assigned_zones":[]}
+    feed = build_feed(areas, now, rain, lightning, accum, notices)
     if args.region:
+        for q in feed["quebradas"]:
+            q["status"]["headline"] = q["status"]["headline"].replace("en la parte alta", "en el área observada")
+            q["status"]["advice"] = q["status"]["advice"].replace("en la parte alta", "en el área observada")
         feed["global_notice"] = {
             "severity": "INFO", "title": f"Piloto {args.region} · experimental",
-            "body": "Datos reales sobre áreas provisionales; umbrales sin calibrar. No es un aviso oficial ni un pronóstico de desborde. Avisos oficiales: enlaces de SENAMHI e INDECI.",
+            "body": "Datos reales sobre áreas provisionales; umbrales sin calibrar. No es un aviso oficial ni un pronóstico de desborde. El aviso SENAMHI, cuando está verificado, aparece separado de la lluvia. Sigue las indicaciones de las autoridades.",
             "url": None,
         }
     schema = json.loads(config.SCHEMA_PATH.read_text(encoding="utf-8"))
@@ -140,7 +151,7 @@ def main() -> int:
         "rain_areas_with_data": sum(rain.per_area.get(a.id) is not None for a in areas),
         "lightning_areas_with_data": sum(lightning.get(a.id) is not None for a in areas),
         "model_accumulation_areas_with_data": sum(accum.get(a.id) is not None for a in areas),
-        "official_notices": "links only; official bulletin ingestion is not implemented",
+        "official_notices": notice_report,
         "status_json_bytes": (args.out / "status_quebradas.json").stat().st_size,
     })
 

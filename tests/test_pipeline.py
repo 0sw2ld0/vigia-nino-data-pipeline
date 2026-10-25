@@ -186,7 +186,7 @@ def test_lima_pilot_only_uses_configured_lima_areas():
     areas = load_areas(config.QUEBRADAS_GEOJSON)
     selected = select_areas(areas, "lima")
     assert selected and all(a.region == "Lima" for a in selected)
-    assert {a.id for a in selected} == {"LIM-CHO-QUIRIO"}
+    assert {a.id for a in selected} == {"LIM-CHO-QUIRIO", "LIM-YAU-PISOCANCHA"}
     assert select_areas(areas, None) == areas
 
 
