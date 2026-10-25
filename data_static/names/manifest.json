@@ -1,0 +1,35 @@
+{
+  "retrieved_at": "2026-10-25",
+  "segments": 12462,
+  "original_named_segments": 2203,
+  "named_segments": 2454,
+  "new_named_segments": 251,
+  "pending_segments": 10008,
+  "states": {
+    "SOURCE_IGN": 2203,
+    "CARTOGRAPHIC_MATCH": 251
+  },
+  "source_features": {
+    "named100": 2203,
+    "named500": 20,
+    "ana_fajas": 10,
+    "sigrid_places": 97,
+    "sigrid_exposure": 475
+  },
+  "source_sha256": {
+    "named100": "f5e4537ccd51e10712084b89ab261cb9aef74fbe329c487a1af5df9c1e5a8e90",
+    "named500": "e39f8ca898344bbf3bb33f7b0bc55cec6f36c757e98bb731a143deaac2d580be",
+    "ana_fajas": "6503c0a4d6a503f244eaf0c59e0fb023c8d391cab21cb7eedfaa2de3b1d7e952",
+    "sigrid_places": "babffeea2da998c5b13664ba06205d91b27c7fd35dfffc18874f0f1b72b8590f",
+    "sigrid_exposure": "9f3d457e880a8ce2cdef408833eb54ecf302eea8704e78411ebe1297d228d6fb"
+  },
+  "crosswalk_sha256": "99b338c21e56458e9eef14e6bfcb5e91f15f151c203c7c70c91c25f25a626188",
+  "conflicts": 29,
+  "documentary_references": 97,
+  "ana_name_agreements": 7,
+  "study_channel_intersections": 463,
+  "method": "At least 98% of a >=100 m IGN segment within 2 m of named official line in EPSG:32718; one distinct normalized name; never replace conflicting IGN name. No nearest, polygon or point naming.",
+  "limitation": "Crossed names are cartographic matches, not field verification. 2 m is coordinate matching tolerance, not map accuracy. MINAM hydrography and IGN may share Peru Digital origin; not independent confirmations. Segments are not unique quebradas. GeoQuebradas district risk layer has no channel-name field. ANA points and hazard polygons are review evidence only.",
+  "license": "Public official query access; metadata does not state an explicit redistribution license. Preserve attribution.",
+  "crosswalk_bytes": 417381
+}

@@ -1,4 +1,5 @@
 """Official advisories and experimental satellite observations near Lima channels."""
+import channel_names
 import gzip
 import json
 from collections import Counter
@@ -35,6 +36,7 @@ def build_feed(root, base_feed, notices, notice_report, rain=None, lightning=Non
                accumulation=None, accumulation_context=None, accumulation_retrieved_at=None,
                watershed_context=None):
     rows = json.loads(gzip.decompress((root/'data_static/lima_channels.json.gz').read_bytes()))
+    names = channel_names.load_catalog(root)["names"]
     zones = []
     for oid, name, paths in rows:
         points = [p for line in paths for p in line]
@@ -47,7 +49,7 @@ def build_feed(root, base_feed, notices, notice_report, rain=None, lightning=Non
             config.THRESHOLD_PROFILES['LIMA_OBSERVATION']).as_dict()
         for key in ['headline','advice']:
             status[key] = status[key].replace('en la parte alta','en el entorno observado del cauce')
-        zones.append({'id':zone_id, 'name':f'{name or "Tramo sin nombre"} · {oid}',
+        zones.append({'id':zone_id, 'name':names.get(zone_id,{}).get('name',channel_names.UNKNOWN),
             'region':'Lima', 'district':notice['geographic_scope'] if notice else 'Catálogo IGN · Lima',
             'centroid':{'lat':lat,'lon':lon},
             'observation':{'scan_time_utc':rain.scan_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ') if stats and rain.scan_time else None,
