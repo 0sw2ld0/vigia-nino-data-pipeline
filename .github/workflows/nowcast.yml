@@ -29,9 +29,11 @@ jobs:
         run: echo "hour=$(date -u +%Y%m%d%H)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: .cache/regional-accumulation.json
-          key: regional-gfs-v1-${{ runner.os }}-${{ steps.accum-hour.outputs.hour }}
-          restore-keys: regional-gfs-v1-${{ runner.os }}-
+          path: |
+            .cache/regional-accumulation.json
+            .cache/air-temperature.json
+          key: regional-gfs-v2-${{ runner.os }}-${{ steps.accum-hour.outputs.hour }}
+          restore-keys: regional-gfs-v2-${{ runner.os }}-
       - name: Pruebas sin red
         run: python -m pytest -q
       - name: Procesar Lima y avisos oficiales de Piura y Tumbes

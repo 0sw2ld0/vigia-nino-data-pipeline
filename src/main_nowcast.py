@@ -29,6 +29,7 @@ import exposure
 import calibration
 import historical_events
 import fire_hotspots
+import air_temperature
 from areas import Area, load_areas
 
 
@@ -133,6 +134,13 @@ def main() -> int:
         fire_feed = fire_hotspots.empty(now)
     fire_seconds = time.monotonic() - fire_started
     write_atomic(args.out/'fire_hotspots.json', fire_feed)
+
+    try:
+        temperature_feed = air_temperature.fetch(config.ROOT, now, config.ROOT / '.cache' / 'air-temperature.json')
+    except Exception as exc:
+        warn(f'Temperatura del aire no disponible: {exc!r}')
+        temperature_feed = air_temperature.empty(now)
+    write_atomic(args.out/'air_temperature.json', temperature_feed)
 
     lightning_started = time.monotonic()
     try:

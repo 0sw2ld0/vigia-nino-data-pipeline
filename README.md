@@ -250,3 +250,7 @@ El feed regional incluye 72 horas completas de precipitación modelada GFS vía 
 ## Focos de calor
 
 `public/v1/fire_hotspots.json` publica el último barrido NOAA GOES-19 ABI-L2-FDCF para Lima, Piura y Tumbes. Solo se exportan máscaras 10, 11, 13, 30, 31 y 33 con DQF=0, contrastadas con sus significados en el producto. Se excluyen baja/media probabilidad y contaminación por nubes. Cada detección permanece UNCONFIRMED. La posición es el centro de un píxel satelital, no un perímetro ni una ubicación exacta del incendio. Incluye fecha original, clave de origen y fracciones de cobertura útil/nubes por departamento. Una descarga fallida produce UNAVAILABLE, no un resultado seco o seguro. No se requieren claves ni una conexión entrante al Mac.
+
+## Temperatura del aire
+
+`v1/air_temperature.json`: temperatura a 2 m modelada por GFS vía Open-Meteo, válida para la hora UTC indicada. Muestreo cada 0,25° (~28 km), 153 celdas recortadas a Lima, Piura y Tumbes. No son mediciones de estaciones ni alertas térmicas. Datos ausentes son `null`; un fallo de esta fuente no impide publicar las demás. Caché horaria de una copia, sin acumular barridos. Atribución: Open-Meteo y NOAA GFS, CC BY 4.0; API gratuita para el piloto no comercial según sus condiciones.
