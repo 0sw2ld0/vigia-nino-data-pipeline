@@ -102,6 +102,12 @@ datos oficiales públicos al archivo `senamhi_verified_snapshot.json.gz` de la r
 `senamhi-live`, mediante la sesión local de `gh`; no publica credenciales ni crea commits
 por cada descarga. Si falla, conserva la hora original de la última copia válida.
 
+El Mac realiza únicamente conexiones salientes HTTPS a SENAMHI y GitHub. **Actions no
+se conecta al Mac**: descarga la copia desde GitHub Releases, mediante la URL pública
+`https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/senamhi_verified_snapshot.json.gz`.
+El recolector no abre puertos, no ejecuta un servidor web, no configura túneles y no
+modifica CuyScale ni la autoridad del Mac. La app móvil también consulta GitHub Pages.
+
 Con `SENAMHI_COLLECTOR_URL` configurado, Actions intenta primero la copia del Mac y
 solo intenta la fuente oficial si esa copia falla. Sin esa variable consulta directamente
 SENAMHI. Se evita esperar el timeout conocido desde GitHub en cada ejecución.
@@ -177,3 +183,9 @@ consulta de copia y cruce **1,313 s** (descarga **0,767 s**, cruce **0,543 s**),
 regional **0,788 s**, JSON **7.894.390 bytes**. Son mediciones de esa ejecución; Actions
 tiene además preparación de entorno, pruebas y publicación. El recolector también registra
 sus métricas en `state/status.json` y las muestra en el panel.
+
+La [ejecución regional verificada](https://github.com/0sw2ld0/vigia-nino-data-pipeline/actions/runs/40154612607)
+procesó el conjunto en **37,94 s**: consulta y cruce **1,311 s**, de los que el cruce fue
+**1,026 s**, y generación/validación regional **2,05 s**. La descarga comprimida del JSON
+regional transfirió **242.550 bytes** (aunque descomprimido son 7.894.390 bytes).
+Con estas mediciones, el cruce permanece en Actions; no justifica trasladarlo al Mac.
