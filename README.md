@@ -114,6 +114,11 @@ No requieren sudo. El runtime aislado reside en
 `~/Library/Logs/VigiaSenamhi` y el panel en `~/Applications/Vigia Recolector.app`.
 No necesitan abrir puertos ni alterar la VPN.
 
+El panel tiene ventana propia y aparece también en el Dock. Su icono utiliza Chiyo
+con una nube de lluvia, siguiendo la identidad de CuyCleaner y CuyScale; la barra de
+menú es un acceso adicional. Los fuentes y el arte del panel permanecen en el
+repositorio privado y no se incluyen en la exportación pública del pipeline.
+
 `launchd` ejecuta el recolector al cargarlo y cada 900 segundos mientras la sesión esté
 iniciada y el Mac esté despierto y conectado. El bloqueo de pantalla no exige por sí
 mismo detenerlo, pero el reposo y la ausencia de red impiden las consultas. No se fuerza
