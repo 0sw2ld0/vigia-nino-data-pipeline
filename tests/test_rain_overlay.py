@@ -57,3 +57,23 @@ def test_geographic_export_keeps_north_south_and_original_quality():
     assert pixels[-1,0].tolist()==[116,125,139,90]  # Southwest degraded data, never dry.
     assert pixels[-1,-1].tolist()==[202,42,151,195]
     with pytest.raises(ValueError):from_dataset(ds,projection,1.,'key',[west,south,east,north],resolution_m=100)
+
+
+def test_default_raster_scope_contains_all_three_pilot_departments_without_finer_pixels():
+    from rain_overlay import BOUNDS
+    import gzip,json
+    from pathlib import Path
+    root=Path(__file__).resolve().parents[1]/'data_static'
+    for name in ['lima_channels.json.gz','north_channels.json.gz']:
+        rows=json.loads(gzip.decompress((root/name).read_bytes()))
+        for _,_,lines in rows:
+            for line in lines:
+                for lon,lat in line:
+                    assert BOUNDS[0] <= lon <= BOUNDS[2]
+                    assert BOUNDS[1] <= lat <= BOUNDS[3]
+    # Same minimum native sampling (2 km); expanded scope stays under app limits.
+    from pyproj import Transformer
+    import math
+    projection=Transformer.from_crs(4326,3857,always_xy=True)
+    x0,y0=projection.transform(*BOUNDS[:2]);x1,y1=projection.transform(*BOUNDS[2:])
+    assert max(math.ceil((x1-x0)/2000),math.ceil((y1-y0)/2000)) <= 1024

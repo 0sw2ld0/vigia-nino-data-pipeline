@@ -7,7 +7,7 @@ import zlib
 import numpy as np
 from pyproj import Transformer
 
-BOUNDS = [-78.0, -13.6, -75.0, -10.0]  # Lima and surrounding context; not a basin boundary.
+BOUNDS = [-82.0, -13.6, -75.0, -2.8]  # Lima, Piura, Tumbes and surrounding context; not a basin boundary.
 PALETTE = [(0.1, [65,182,230,160]), (2, [35,139,220,175]), (10, [113,74,197,185]), (30, [202,42,151,195])]
 
 
