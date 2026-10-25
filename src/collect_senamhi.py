@@ -57,6 +57,22 @@ def collect(now, channels_path):
     return snapshot
 
 
+def request_weather_update(gh=None, runner=None):
+    """Use the existing collector cadence; do not queue duplicate weather builds."""
+    runner=runner or subprocess.run
+    gh=gh or shutil.which('gh')
+    if not gh:return {'state':'failed','error':'GitHub CLI not available'}
+    try:
+        response=runner([gh,'run','list','--repo',REPO,'--workflow','nowcast.yml','--limit','5','--json','status'],check=True,capture_output=True,text=True,timeout=30)
+        runs=json.loads(response.stdout)
+        if any(run.get('status') in ('queued','in_progress','waiting','pending') for run in runs):
+            return {'state':'already_running'}
+        runner([gh,'workflow','run','nowcast.yml','--repo',REPO],check=True,capture_output=True,text=True,timeout=30)
+        return {'state':'requested'}
+    except Exception as error:
+        return {'state':'failed','error':str(error)}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, required=True)
@@ -71,24 +87,31 @@ def main():
             return
         now = datetime.now(timezone.utc).replace(microsecond=0)
         write_state(args.out, last_attempt_utc=official.iso(now), running=True)
-        snapshot = collect(now, ROOT/'data_static/monitored_channels.geojson')
-        target = args.out/'senamhi_verified_snapshot.json.gz'
-        temporary = target.with_suffix('.tmp')
-        temporary.write_bytes(gzip.compress(json.dumps(snapshot, ensure_ascii=False).encode(), mtime=0))
-        os.replace(temporary, target)
-        if args.publish:
-            gh = shutil.which('gh')
-            if not gh:
-                raise RuntimeError('GitHub CLI not found in PATH')
-            subprocess.run([gh,'release','upload',TAG,str(target),'--repo',REPO,'--clobber'],check=True,timeout=90)
-        write_state(args.out, running=False, last_error=None,
-                    last_success_utc=official.iso(datetime.now(timezone.utc)),
-                    source_retrieved_at_utc=snapshot['retrieved_at_utc'], advisory=snapshot['metadata']['id'],
-                    features=len(snapshot['collection']['features']), published=args.publish,
-                    collector_metrics=snapshot['collector_metrics'])
-        print(json.dumps({'retrieved_at_utc':snapshot['retrieved_at_utc'],
-            'advisory':snapshot['metadata']['id'], 'features':len(snapshot['collection']['features']),
-            'bytes':target.stat().st_size, 'published':args.publish}), flush=True)
+        try:
+            snapshot = collect(now, ROOT/'data_static/monitored_channels.geojson')
+            target = args.out/'senamhi_verified_snapshot.json.gz'
+            temporary = target.with_suffix('.tmp')
+            temporary.write_bytes(gzip.compress(json.dumps(snapshot, ensure_ascii=False).encode(), mtime=0))
+            os.replace(temporary, target)
+            if args.publish:
+                gh = shutil.which('gh')
+                if not gh:
+                    raise RuntimeError('GitHub CLI not found in PATH')
+                subprocess.run([gh,'release','upload',TAG,str(target),'--repo',REPO,'--clobber'],check=True,timeout=90)
+            write_state(args.out, running=False, last_error=None,
+                        last_success_utc=official.iso(datetime.now(timezone.utc)),
+                        source_retrieved_at_utc=snapshot['retrieved_at_utc'], advisory=snapshot['metadata']['id'],
+                        features=len(snapshot['collection']['features']), published=args.publish,
+                        collector_metrics=snapshot['collector_metrics'])
+            print(json.dumps({'retrieved_at_utc':snapshot['retrieved_at_utc'],
+                'advisory':snapshot['metadata']['id'], 'features':len(snapshot['collection']['features']),
+                'bytes':target.stat().st_size, 'published':args.publish}), flush=True)
+        finally:
+            # Weather must still update if the SENAMHI request fails.
+            if args.publish:
+                dispatch=request_weather_update()
+                write_state(args.out,weather_dispatch=dispatch,weather_dispatch_at_utc=official.iso(datetime.now(timezone.utc)))
+
 
 
 if __name__ == '__main__':
