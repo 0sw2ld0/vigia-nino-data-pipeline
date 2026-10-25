@@ -27,6 +27,8 @@ jobs:
       - name: Pruebas sin red
         run: python -m pytest -q
       - name: Procesar datos reales de Lima
+        env:
+          SENAMHI_COLLECTOR_URL: https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/senamhi_verified_snapshot.json.gz
         run: python src/main_nowcast.py --region Lima
       - name: Resumen de la ejecución
         run: |

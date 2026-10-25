@@ -124,10 +124,17 @@ def main() -> int:
     except Exception as exc:
         warn(f"Consulta directa SENAMHI no disponible: {exc!r}")
         try:
-            notices, notice_report = official_warnings.read_verified_snapshot(
-                config.ROOT / "data_static" / "senamhi_verified_snapshot.json.gz",
-                config.ROOT / "data_static" / "monitored_channels.geojson", now)
-            warn("Se utiliza respaldo oficial con fecha de consulta original y vencimiento, no una consulta en directo.")
+            channels_path = config.ROOT / "data_static" / "monitored_channels.geojson"
+            collector_url = os.environ.get("SENAMHI_COLLECTOR_URL")
+            try:
+                if not collector_url:
+                    raise ValueError('Collector URL is not configured')
+                notices, notice_report = official_warnings.fetch_collector_snapshot(collector_url, channels_path, now)
+            except Exception as collector_exc:
+                warn(f"Colector no disponible: {collector_exc!r}")
+                notices, notice_report = official_warnings.read_verified_snapshot(
+                    config.ROOT / "data_static" / "senamhi_verified_snapshot.json.gz", channels_path, now)
+            warn("Se utiliza copia oficial con fecha de consulta original y vencimiento.")
         except Exception as backup_exc:
             warn(f"Sin respaldo vigente: {backup_exc!r}")
             notices, notice_report = {}, {"state":"unavailable", "assigned_zones":[]}

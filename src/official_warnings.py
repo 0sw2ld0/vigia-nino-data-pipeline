@@ -99,8 +99,11 @@ def fetch_notices(channels_path, now):
 
 
 def read_verified_snapshot(path, channels_path, now):
-    """A dated, manually checked official snapshot; never refresh its verification time on read."""
-    snapshot = json.loads(gzip.decompress(path.read_bytes()))
+    """Never refresh a snapshot's original retrieval time on read."""
+    return verify_snapshot(json.loads(gzip.decompress(path.read_bytes())), channels_path, now)
+
+
+def verify_snapshot(snapshot, channels_path, now):
     retrieved = datetime.fromisoformat(snapshot['retrieved_at_utc'].replace('Z','+00:00'))
     if not 0 <= (now - retrieved).total_seconds() <= 6 * 3600:
         raise ValueError('Official backup is older than the six-hour verification limit')
@@ -116,3 +119,12 @@ def read_verified_snapshot(path, channels_path, now):
     return notices, {'state':'verified_snapshot','id':metadata['id'],'source':PAGE_URL,
         'source_retrieved_at_utc':iso(retrieved),'valid_from_utc':iso(metadata['from']),'valid_until_utc':iso(metadata['until']),
         'snapshot_max_age_hours':6,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features'])}
+
+
+def fetch_collector_snapshot(url, channels_path, now):
+    response = requests.get(url, params={'checked_at':iso(now)}, timeout=30)
+    response.raise_for_status()
+    if len(response.content) > 5_000_000:
+        raise ValueError('Collector snapshot exceeds size limit')
+    notices, report = verify_snapshot(json.loads(gzip.decompress(response.content)), channels_path, now)
+    return notices, {**report, 'state':'verified_collector', 'collector_url':url}

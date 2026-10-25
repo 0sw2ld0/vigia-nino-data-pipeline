@@ -93,3 +93,43 @@ python src/diagnose_sources.py --out /tmp/senamhi-connectivity.json
 ```
 
 La siguiente prueba debe usar un entorno de red distinto que pueda consultar las fuentes oficiales. Un colector o intermediario pequeño en otra plataforma puede mantener el procesamiento geoespacial en Actions; antes de depender de él, comprobar conectividad desde esa plataforma. Otra posibilidad es un equipo propio encendido con tareas programadas. El respaldo fechado actual sigue siendo solo una prueba temporal.
+
+### Colector temporal en macOS
+
+`src/collect_senamhi.py` descarga el portal y la capa WFS de Lima, comprueba vigencia,
+fecha de geometrías, integridad y asociación espacial antes de publicar. Sube únicamente
+datos oficiales públicos al archivo `senamhi_verified_snapshot.json.gz` de la release
+`senamhi-live`, mediante la sesión local de `gh`; no publica credenciales ni crea commits
+por cada descarga. Si falla, conserva la hora original de la última copia válida.
+
+Actions intenta primero la fuente oficial y después la copia indicada por
+`SENAMHI_COLLECTOR_URL`. La copia vence al superar seis horas de antigüedad o al vencer
+el aviso. La app continúa consumiendo el mismo JSON de Pages. Una descarga nueva llega
+a la app después del siguiente procesamiento y despliegue de Actions.
+
+En el repositorio privado, `python3 tools/build_senamhi_app.py` prepara el panel de barra
+de menú y `python3 tools/install_senamhi_agent.py` instala ambos componentes por usuario.
+No requieren sudo. El runtime aislado reside en
+`~/Library/Application Support/VigiaSenamhi`, los registros en
+`~/Library/Logs/VigiaSenamhi` y el panel en `~/Applications/Vigia Recolector.app`.
+No necesitan abrir puertos ni alterar la VPN.
+
+`launchd` ejecuta el recolector al cargarlo y cada 900 segundos mientras la sesión esté
+iniciada y el Mac esté despierto y conectado. El bloqueo de pantalla no exige por sí
+mismo detenerlo, pero el reposo y la ausencia de red impiden las consultas. No se fuerza
+al equipo a permanecer despierto ni se despierta automáticamente. El panel se abre al
+iniciar sesión; cerrarlo no detiene el recolector. Sus controles permiten recolectar
+ahora, reiniciar, detener o activar. Detener deshabilita también el inicio de la tarea
+hasta volver a activarla. No se necesitan permisos de administrador.
+
+Diagnóstico:
+
+```sh
+launchctl print gui/$(id -u)/dev.cuycoders.vigia.senamhi
+cat "$HOME/Library/Application Support/VigiaSenamhi/state/status.json"
+```
+
+Para desinstalar, detener primero el recolector desde el panel y cerrar el panel.
+Descargar su agente con `launchctl bootout gui/$(id -u)/dev.cuycoders.vigia.senamhi.panel`
+y retirar las dos entradas `dev.cuycoders.vigia.senamhi*.plist` de
+`~/Library/LaunchAgents`, la app y las carpetas de runtime/registros indicadas arriba.
