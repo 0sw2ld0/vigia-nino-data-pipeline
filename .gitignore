@@ -4,3 +4,5 @@ __pycache__/
 public/
 backtest/out/
 backtest_run.log
+
+diagnostics/
