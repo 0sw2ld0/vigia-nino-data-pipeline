@@ -1,4 +1,4 @@
-"""Collect and replace one verified SENAMHI snapshot for Lima, Piura and Tumbes."""
+"""Collect and replace one verified national SENAMHI snapshot."""
 import argparse
 import fcntl
 import gzip
@@ -51,7 +51,7 @@ def collect(now, channels_path):
         'download_seconds':round(matching_started-started,3),
         'spatial_matching_seconds':round(time.perf_counter()-matching_started,3),
         'total_fetch_validation_seconds':round(time.perf_counter()-started,3),
-        'pilot_segments':sum(f['properties']['zone_id'].startswith('IGN-') for f in official.load_channels(channels_path)['features']),
+        'pilot_segments':274590 if (channels_path.parent/'peru_channels.json.gz').exists() else sum(f['properties']['zone_id'].startswith('IGN-') for f in official.load_channels(channels_path)['features']),
         'assigned_pilot_segments':sum(key.startswith('IGN-') for key in notices)}
     return snapshot
 

@@ -23,6 +23,7 @@ import official_warnings
 import risk
 import lima
 import north
+import national
 import regional_accumulation
 import watersheds
 import exposure
@@ -135,12 +136,14 @@ def main() -> int:
     fire_seconds = time.monotonic() - fire_started
     write_atomic(args.out/'fire_hotspots.json', fire_feed)
 
+    temperature_started=time.monotonic()
     try:
         temperature_feed = air_temperature.fetch(config.ROOT, now, config.ROOT / '.cache' / 'air-temperature.json')
     except Exception as exc:
         warn(f'Temperatura del aire no disponible: {exc!r}')
         temperature_feed = air_temperature.empty(now)
     write_atomic(args.out/'air_temperature.json', temperature_feed)
+    temperature_seconds=time.monotonic()-temperature_started
 
     lightning_started = time.monotonic()
     try:
@@ -222,6 +225,12 @@ def main() -> int:
     northern_feed, northern_report = north.build_feed(config.ROOT, feed, notices, notice_report)
     jsonschema.Draft202012Validator(schema).validate(northern_feed)
     write_atomic(args.out / 'status_norte.json', northern_feed)
+    country_feeds,country_report=national.build_feeds(config.ROOT,feed,notices,notice_report)
+    for region_key,country_feed in country_feeds.items():
+        if region_key == 'lima':continue
+        jsonschema.Draft202012Validator(schema).validate(country_feed)
+        write_atomic(args.out/f'status_{region_key}.json',country_feed)
+    write_atomic(args.out/'coverage_peru.json',{'processed_at_utc':iso(now),'regions':country_report})
     write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
     write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)
     if rain.overlay:
@@ -243,6 +252,8 @@ def main() -> int:
     write_atomic(args.out / "run_report.json", {
         "processed_at_utc": iso(now), "finished_at_utc": iso(datetime.now(timezone.utc)),
         "processing_seconds": round(time.monotonic() - started, 2),
+        "national_coverage":country_report,
+        "air_temperature":{"state":temperature_feed["state"],"cells":len(temperature_feed["cells"]),"valid_cells":sum(c["celsius"] is not None for c in temperature_feed["cells"]),"processing_seconds":round(temperature_seconds,3),"model":temperature_feed.get("model")},
         "fire_hotspots": {"state":fire_feed["state"], "scan_time_utc":fire_feed["scan_time_utc"], "detections":len(fire_feed["detections"]), "regions":fire_feed["regions"], "processing_seconds":round(fire_seconds,3)},
         "scope": args.region or "all configured regions", "area_ids": [a.id for a in areas],
         "geometry_status": "PROVISIONAL", "thresholds_status": "UNCALIBRATED",

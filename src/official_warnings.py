@@ -16,20 +16,21 @@ WFS_URL = 'https://idesep.senamhi.gob.pe/geoserver/g_acti_quebrada/ows'
 LIMA_TZ = timezone(timedelta(hours=-5))
 MONTHS = {name: i+1 for i, name in enumerate(['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'])}
 LEVELS = {'Nivel 2': ('YELLOW','amarillo',2), 'Nivel 3': ('ORANGE','naranja',3), 'Nivel 4': ('RED','rojo',4)}
-DEPARTMENTS = ('LIMA', 'PIURA', 'TUMBES')
-DEPARTMENT_FILTER = "nombdep IN ('LIMA','PIURA','TUMBES')"
+DEPARTMENTS = ('AMAZONAS','ANCASH','APURIMAC','AREQUIPA','AYACUCHO','CAJAMARCA','CALLAO','CUSCO','HUANCAVELICA','HUANUCO','ICA','JUNIN','LA LIBERTAD','LAMBAYEQUE','LIMA','LORETO','MADRE DE DIOS','MOQUEGUA','PASCO','PIURA','PUNO','SAN MARTIN','TACNA','TUMBES','UCAYALI')
+DEPARTMENT_FILTER = "nombdep IN (" + ','.join("'"+name+"'" for name in DEPARTMENTS) + ")"
 
 
 def load_channels(path):
     channels = json.loads(path.read_text())
     seen = {f['properties']['zone_id'] for f in channels['features']}
-    for filename in ('lima_channels.json.gz', 'north_channels.json.gz'):
+    filenames=('peru_channels.json.gz',) if (path.parent/'peru_channels.json.gz').exists() else ('lima_channels.json.gz','north_channels.json.gz')
+    for filename in filenames:
         regional = path.parent/filename
         if regional.exists():
             for row in json.loads(gzip.decompress(regional.read_bytes())):
                 ident = f'IGN-{row[0]}'
                 if ident not in seen:
-                    channels['features'].append({'type':'Feature','properties':{'zone_id':ident},
+                    channels['features'].append({'type':'Feature','properties':{'zone_id':ident,'national_reference':filename=='peru_channels.json.gz'},
                         'geometry':{'type':'MultiLineString','coordinates':row[2]}})
                     seen.add(ident)
     return channels
@@ -84,6 +85,9 @@ def assign_notices(metadata, collection, channels, now, departments=('LIMA',)):
     for channel in channels['features']:
         line = shape(channel['geometry'])
         if line.is_empty or not line.is_valid or line.length <= 0:
+            if channel['properties'].get('national_reference'):
+                channels.setdefault('excluded_invalid_reference_ids',[]).append(channel['properties']['zone_id'])
+                continue
             raise ValueError('Invalid reference channel')
         grouped = {}
         for index in tree.query(line, predicate='intersects'):
@@ -121,7 +125,7 @@ def fetch_notices(channels_path, now):
     collection = response.json()
     channels = load_channels(channels_path)
     notices = assign_notices(metadata,collection,channels,now,departments=DEPARTMENTS)
-    return notices, {**report,'state':'verified','department_scope':list(DEPARTMENTS),'source_features':len(collection['features']),'assigned_zones':sorted(notices)}
+    return notices, {**report,'state':'verified','department_scope':list(DEPARTMENTS),'source_features':len(collection['features']),'excluded_invalid_reference_ids':channels.get('excluded_invalid_reference_ids',[]),'assigned_zones':sorted(notices)}
 
 
 def read_verified_snapshot(path, channels_path, now):
@@ -143,13 +147,14 @@ def verify_snapshot(snapshot, channels_path, now):
         raise ValueError('Unknown official snapshot department scope')
     if any(f['properties'].get('nombdep') not in scope for f in snapshot['collection']['features']):
         raise ValueError('Official geometry outside declared department scope')
-    notices = assign_notices(metadata, snapshot['collection'], load_channels(channels_path), now, departments=scope)
+    channels=load_channels(channels_path)
+    notices = assign_notices(metadata, snapshot['collection'], channels, now, departments=scope)
     stamp = retrieved.astimezone(LIMA_TZ).strftime('%d/%m/%Y %H:%M')
     for notice in notices.values():
         notice['body'] += f' Copia oficial verificada el {stamp} (hora de Perú); consulta directa temporalmente no disponible.'
     return notices, {'state':'verified_snapshot','id':metadata['id'],'source':PAGE_URL,
         'source_retrieved_at_utc':iso(retrieved),'valid_from_utc':iso(metadata['from']),'valid_until_utc':iso(metadata['until']),
-        'snapshot_max_age_hours':6,'department_scope':scope,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features'])}
+        'snapshot_max_age_hours':6,'department_scope':scope,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features']),'excluded_invalid_reference_ids':channels.get('excluded_invalid_reference_ids',[])}
 
 
 def fetch_collector_snapshot(url, channels_path, now):

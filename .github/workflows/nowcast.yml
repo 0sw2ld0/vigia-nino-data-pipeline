@@ -32,8 +32,8 @@ jobs:
           path: |
             .cache/regional-accumulation.json
             .cache/air-temperature.json
-          key: regional-gfs-v2-${{ runner.os }}-${{ steps.accum-hour.outputs.hour }}
-          restore-keys: regional-gfs-v2-${{ runner.os }}-
+          key: regional-gfs-v3-peru-${{ runner.os }}-${{ steps.accum-hour.outputs.hour }}
+          restore-keys: regional-gfs-v3-peru-${{ runner.os }}-
       - name: Pruebas sin red
         run: python -m pytest -q
       - name: Procesar Lima y avisos oficiales de Piura y Tumbes

@@ -28,7 +28,8 @@ def empty(now, state='UNAVAILABLE', reason='No se pudo verificar el producto sat
 
 def boundaries(root):
     result={}
-    for filename in ['lima_boundary.geojson.gz','north_boundary.geojson.gz']:
+    files=['peru_boundary.geojson.gz'] if (root/'data_static/peru_boundary.geojson.gz').exists() else ['lima_boundary.geojson.gz','north_boundary.geojson.gz']
+    for filename in files:
         for f in json.loads(gzip.decompress((root/'data_static'/filename).read_bytes()))['features']:
             name=(f['properties'].get('nombdpto') or f['properties'].get('NM_DEPA')).title()
             result[name]=shape(f['geometry'])
@@ -46,7 +47,7 @@ def from_dataset(ds, key, now, regions):
     if not -300 <= (now-scan).total_seconds() <= 3600:
         raise ValueError('Thermal satellite scan is stale or in the future')
     transform,height=goes._geos_transformer(ds)
-    envelope=Area('FIRE-WINDOW','Thermal coverage','','','LIMA_OBSERVATION',0,0,box(-82,-13.6,-75,-2.8))
+    envelope=Area('FIRE-WINDOW','Thermal coverage','','','LIMA_OBSERVATION',0,0,box(-82,-19,-68,1))
     rows,cols=goes._window(ds,transform,height,envelope)
     masks=ds['Mask'][rows,cols].values
     quality=ds['DQF'][rows,cols].values
@@ -80,7 +81,7 @@ def from_dataset(ds, key, now, regions):
                 observed_at_utc=stamp(scan),mask=code,quality=0,
                 category=ACCEPTED[code],confirmation='UNCONFIRMED',
                 location_context='Centro de píxel satelital; no ubicación exacta del incendio'))
-    if len(detections)>1000: raise ValueError('Unexpected regional thermal detection count')
+    if len(detections)>10000: raise ValueError('Unexpected regional thermal detection count')
     feed=empty(now)
     feed.update(state='AVAILABLE',scan_time_utc=stamp(scan),source_key=key,regions=coverage,
         detections=detections,nominal_resolution_m_at_nadir=2000,

@@ -254,3 +254,11 @@ El feed regional incluye 72 horas completas de precipitación modelada GFS vía 
 ## Temperatura del aire
 
 `v1/air_temperature.json`: temperatura a 2 m modelada por GFS vía Open-Meteo, válida para la hora UTC indicada. Muestreo cada 0,25° (~28 km), 153 celdas recortadas a Lima, Piura y Tumbes. No son mediciones de estaciones ni alertas térmicas. Datos ausentes son `null`; un fallo de esta fuente no impide publicar las demás. Caché horaria de una copia, sin acumular barridos. Atribución: Open-Meteo y NOAA GFS, CC BY 4.0; API gratuita para el piloto no comercial según sus condiciones.
+
+## Cobertura nacional
+
+Las capas del mapa cubren los 24 departamentos y Callao. `departments.json` y los índices regionales seleccionan los cauces del catálogo local IGN (274.590 tramos; no equivalen a quebradas únicas). El recolector cruza los sectores de SENAMHI contra la geometría nacional y publica `status_<region>.json` con solo los tramos asociados a avisos; las apps descargan el departamento elegido. Una copia oficial limitada a departamentos anteriores nunca verifica los demás.
+
+La lluvia GOES mantiene muestreo de 2 km sobre [-82,-19,-68,1], con imagen máxima de 1536 px por lado y conteos por departamento. Los focos de calor usan los píxeles nativos y calidad verificada; no delimitan área quemada. Los tramos degenerados del catálogo se excluyen del cruce y se registran en el informe.
+
+La temperatura nacional reemplaza las consultas por ubicación a Open-Meteo por un único mensaje GRIB2 de NOAA GFS de temperatura del aire a 2 m, descargado por rango de bytes del bucket público. Se valida variable, altura, unidades, cuadrícula y hora válida. Resolución 0,25° (~28 km), 2.396 zonas recortadas a límites oficiales. Se intenta el ciclo más reciente y dos ciclos previos para la misma hora válida; la procedencia conserva ciclo y plazo del pronóstico. No es una lectura de estación ni análisis de peligro. Los acumulados por tramo, cuencas y huellas documentadas mantienen su cobertura anterior; no se extrapolan al país.
