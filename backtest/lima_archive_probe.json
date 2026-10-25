@@ -1,0 +1,31 @@
+{
+  "reviewed_on_peru": "2026-10-24",
+  "purpose": "Technical archive and parser probe, not calibration or hindcast skill",
+  "document_checks": {
+    "source_id": "coen-999-2023",
+    "sha256": "a19be95c31b8634f0dbe34c91229d6876054173421b9348fb7a2b9f0301df8d7",
+    "visual_pages_reviewed": [
+      2,
+      24
+    ],
+    "excluded_page_24_reason": "18 MAYO 2023 conflicts with 9 April issue date and time column is report time"
+  },
+  "archive_probe": {
+    "event_id": "LIMA-20230314-QUIRIO-CASTILLA",
+    "candidate_channel_id": "IGN-11834",
+    "spatial_status": "UNVERIFIED_EVENT_ASSOCIATION",
+    "s3_key": "noaa-goes16/ABI-L2-RRQPEF/2023/073/19/OR_ABI-L2-RRQPEF-M6_G16_s20230731900206_e20230731909514_c20230731910052.nc",
+    "sha256": "1f982c42fb89de84d6c39c6b1a5140e981772bb7d4492f338fb745934e8ef894",
+    "file_bytes": 1961158,
+    "scan_end_utc": "2023-03-14T19:09:51Z",
+    "max_mmh": 7.2,
+    "mean_mmh": 7.2,
+    "sampling": "Existing 1km IGN channel corridor; nearest valid pixel fallback if no pixel center inside; DQF 0 required",
+    "limitation": "One scan only. Reported 14:20 is rain-causing-activation time, not measured flow onset. This is not an alert lead time or evidence to select a threshold."
+  },
+  "old_archive_probe": {
+    "s3_prefix": "noaa-goes16/ABI-L2-RRQPEF/2017/031/21/",
+    "objects_returned": 0,
+    "limitation": "One queried hour only; absence is not zero rainfall. Earlier events need other verified historical products."
+  }
+}

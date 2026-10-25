@@ -1,0 +1,387 @@
+{
+  "schema_version": "1.0",
+  "reviewed_on_peru": "2026-10-24",
+  "scope": "Departamento de Lima; inventario inicial no exhaustivo",
+  "review_scope": "Verificación documental de evento y semántica temporal; no validación científica ni georreferenciación hidrológica",
+  "episode_group_policy": "Agrupación conservadora para evitar fuga; toda la temporada 2025 queda junta hasta revisar independencia meteorológica. Un reporte multiquebrada cuenta una sola vez.",
+  "sources": {
+    "indeci-huaycoloro-20230312": {
+      "publisher": "INDECI / COEN, información del IGP",
+      "url": "https://www.gob.pe/institucion/indeci/noticias/724409-el-coen-monitorea-activacion-de-la-quebrada-huaycoloro-lima",
+      "locator": "Nota de prensa 227-2023, primer párrafo",
+      "published_on": "2023-03-12"
+    },
+    "igp-huaycoloro-2017": {
+      "publisher": "Instituto Geofísico del Perú",
+      "url": "https://www.gob.pe/institucion/igp/noticias/74437-especialistas-de-la-scts-realizan-inspeccion-en-quebrada-de-huaycoloro-jicamarca",
+      "locator": "Inspección de los flujos del martes 31 de enero; no usar los 4 min de viaje como hora de ocurrencia",
+      "published_on": "2017-02-06"
+    },
+    "pcm-017-2015": {
+      "publisher": "Presidencia del Consejo de Ministros / SPIJ",
+      "url": "https://spij.minjus.gob.pe/Normas/textos/250315T.pdf",
+      "locator": "DS 017-2015-PCM, primer considerando",
+      "published_on": "2015-03-25"
+    },
+    "coen-999-2023": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/wp-content/uploads/2023/04/INFORME-DE-EMERGENCIA-N%C2%BA-999-9ABR2023-LLUVIAS-INTENSAS-EN-EL-DEPARTAMENTO-DE-LIMA-23-DEE.pdf",
+      "locator": "Página 2, LURIGANCHO; excluir tabla página 24 por fecha contradictoria",
+      "published_on": "2023-04-09"
+    },
+    "coen-5016-2024": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-complementario-n-5016-6-6-2024-coen-indeci-1940-horas-reporte-n-o-1-huaico-en-el-distrito-de-chicla-lima/",
+      "locator": "HECHOS: fecha y hora de la ocurrencia",
+      "published_on": "2024-06-06"
+    },
+    "coen-0837-2025": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-complemetario-n-0041-2-1-2025-coen-indeci-2340-horas-reporte-n-1-huaico-en-el-distrito-de-catahuasi-lima/",
+      "locator": "HECHOS; fecha de ocurrencia 1 enero, no fecha de actualización de abril",
+      "published_on": "2025-04-11"
+    },
+    "coen-1338-2025": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-complementario-n-0128-5-1-2025-coen-indeci-1340-horas-reporte-n-1-huaico-en-el-distrito-de-oyon-lima/",
+      "locator": "HECHOS; un reporte conjunto de dos quebradas, no dos episodios independientes",
+      "published_on": "2025-01-31"
+    },
+    "coen-4154-2025": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-preliminar-n-0283-6-2-2025-coen-indeci-1100-horas-huaico-en-el-distrito-de-cajatambo-lima/",
+      "locator": "HECHOS: fecha y hora de la ocurrencia",
+      "published_on": "2025-03-27"
+    },
+    "coen-4276-2025": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-preliminar-n-0451-15-2-2025-coen-indeci-0756-horas-huaico-en-el-distrito-de-lunahuana-lima/",
+      "locator": "HECHOS; un reporte conjunto Jita y Condoray, no dos episodios independientes",
+      "published_on": "2025-03-30"
+    },
+    "coen-4766-2025": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-preliminar-n-614-23-2-2025-coen-indeci-2330-horas-huaico-en-el-distrito-de-san-andres-de-tupicocha-lima/",
+      "locator": "HECHOS: quebrada Chanchana",
+      "published_on": "2025-04-12"
+    },
+    "coen-1669-2025": {
+      "publisher": "INDECI / COEN",
+      "url": "https://portal.indeci.gob.pe/emergencias/reporte-complementario-n-o-5635-7-5-2025-coen-indeci-1620-horas-reporte-n-1-deslizamiento-en-el-distrito-de-chicla-lima/",
+      "locator": "HECHOS: primera fila, huaico del 12 mayo; excluir deslizamiento del 6 mayo",
+      "published_on": "2025-06-14"
+    }
+  },
+  "events": [
+    {
+      "event_id": "LIMA-20150323-QUIRIO",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2015-03-23",
+      "event_time_local": null,
+      "time_semantics": "DATE_ONLY",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "Se conoce el día; no se inventa una hora de inicio.",
+      "region": "Lima",
+      "province": "Lima",
+      "district": "Lurigancho-Chosica",
+      "locality": "Quebrada Quirio",
+      "watercourse_names": [
+        "Quirio"
+      ],
+      "source_id": "pcm-017-2015",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "CHOSICA-2015-03",
+      "candidate_channel_ids": [
+        "IGN-11834",
+        "IGN-13127",
+        "IGN-13129"
+      ],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": "El decreto confirma múltiples activaciones el mismo día. La huella A6680 de Quirio está incorporada como contexto histórico; no se usa automáticamente como cuenca aportante."
+    },
+    {
+      "event_id": "LIMA-20170131-HUAYCOLORO",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2017-01-31",
+      "event_time_local": null,
+      "time_semantics": "DATE_ONLY",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "Se conoce el día; no se inventa una hora de inicio.",
+      "region": "Lima",
+      "province": "Lima",
+      "district": "Lurigancho-Chosica",
+      "locality": "Subcuenca Huaycoloro / Jicamarca",
+      "watercourse_names": [
+        "Huaycoloro"
+      ],
+      "source_id": "igp-huaycoloro-2017",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "ELNINO-2017",
+      "candidate_channel_ids": [
+        "IGN-11684"
+      ],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": ""
+    },
+    {
+      "event_id": "LIMA-20230312-HUAYCOLORO",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2023-03-12",
+      "event_time_local": "2023-03-12T16:30:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Lima",
+      "district": "Lurigancho-Chosica",
+      "locality": "Quebrada Huaycoloro",
+      "watercourse_names": [
+        "Huaycoloro"
+      ],
+      "source_id": "indeci-huaycoloro-20230312",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "YAKU-2023-03",
+      "candidate_channel_ids": [
+        "IGN-11684"
+      ],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": "Nota INDECI atribuye activación al sistema IGP. El informe 999 menciona lluvia a las 17:44 para un conjunto de quebradas; no se sustituye una hora de fenómeno por la otra."
+    },
+    {
+      "event_id": "LIMA-20230314-QUIRIO-CASTILLA",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2023-03-14",
+      "event_time_local": "2023-03-14T14:20:00-05:00",
+      "time_semantics": "RAIN_CAUSING_ACTIVATION_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Lima",
+      "district": "Lurigancho",
+      "locality": "Quebradas Quirio y Mariscal Castilla",
+      "watercourse_names": [
+        "Quirio",
+        "Mariscal Castilla"
+      ],
+      "source_id": "coen-999-2023",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "YAKU-2023-03",
+      "candidate_channel_ids": [
+        "IGN-11834"
+      ],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": "La hora corresponde a lluvias que causaron activaciones; no es una medición del inicio del flujo. Un solo registro conjunto, sin duplicarlo por quebrada."
+    },
+    {
+      "event_id": "LIMA-20240605-CASAPALCA",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2024-06-05",
+      "event_time_local": "2024-06-05T11:18:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Huarochirí",
+      "district": "Chicla",
+      "locality": "Centro poblado Casapalca",
+      "watercourse_names": [],
+      "source_id": "coen-5016-2024",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "CHICLA-2024-06",
+      "candidate_channel_ids": [],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": ""
+    },
+    {
+      "event_id": "LIMA-20250101-CANCHAN",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2025-01-01",
+      "event_time_local": "2025-01-01T11:00:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Yauyos",
+      "district": "Catahuasi",
+      "locality": "Canchán",
+      "watercourse_names": [],
+      "source_id": "coen-0837-2025",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "LIMA-WET-2025",
+      "candidate_channel_ids": [],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": "CANCHAN es coincidencia de topónimo en el catálogo, no una asociación verificada."
+    },
+    {
+      "event_id": "LIMA-20250103-OYON",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2025-01-03",
+      "event_time_local": "2025-01-03T10:30:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Oyón",
+      "district": "Oyón",
+      "locality": "Tectahuain y Picoy; vías Churín–Oyón y Rapaz–Picoy",
+      "watercourse_names": [
+        "Tectahuain",
+        "Curupuquio"
+      ],
+      "source_id": "coen-1338-2025",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "LIMA-WET-2025",
+      "candidate_channel_ids": [],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": ""
+    },
+    {
+      "event_id": "LIMA-20250205-UTCAS",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2025-02-05",
+      "event_time_local": "2025-02-05T16:30:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Cajatambo",
+      "district": "Cajatambo",
+      "locality": "Utcas, anexos Llocchi y Cajamarquilla",
+      "watercourse_names": [],
+      "source_id": "coen-4154-2025",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "LIMA-WET-2025",
+      "candidate_channel_ids": [],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": "UTCAS es coincidencia de localidad en el catálogo, no una asociación verificada."
+    },
+    {
+      "event_id": "LIMA-20250214-JITA-CONDORAY",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2025-02-14",
+      "event_time_local": "2025-02-14T16:20:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Cañete",
+      "district": "Lunahuaná",
+      "locality": "Anexos Jita y Condoray",
+      "watercourse_names": [
+        "Jita",
+        "Condoray"
+      ],
+      "source_id": "coen-4276-2025",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "LIMA-WET-2025",
+      "candidate_channel_ids": [
+        "IGN-333064"
+      ],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": ""
+    },
+    {
+      "event_id": "LIMA-20250223-CHANCHANA",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2025-02-23",
+      "event_time_local": "2025-02-23T17:00:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Huarochirí",
+      "district": "San Andrés de Tupicocha",
+      "locality": "Chanchana",
+      "watercourse_names": [
+        "Chanchana"
+      ],
+      "source_id": "coen-4766-2025",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "LIMA-WET-2025",
+      "candidate_channel_ids": [],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": ""
+    },
+    {
+      "event_id": "LIMA-20250512-RIOBLANCO",
+      "observed_event": true,
+      "hazard": "DEBRIS_FLOW",
+      "event_date_local": "2025-05-12",
+      "event_time_local": "2025-05-12T17:00:00-05:00",
+      "time_semantics": "OCCURRENCE_REPORTED",
+      "time_uncertainty_minutes": null,
+      "uncertainty_note": "La fuente no cuantifica la incertidumbre de la hora; no se asume exactitud instrumental.",
+      "region": "Lima",
+      "province": "Huarochirí",
+      "district": "Chicla",
+      "locality": "Anexo Río Blanco",
+      "watercourse_names": [],
+      "source_id": "coen-1669-2025",
+      "evidence_status": "OFFICIAL_EVENT_CONFIRMED",
+      "episode_group": "LIMA-WET-2025",
+      "candidate_channel_ids": [],
+      "verified_channel_ids": [],
+      "spatial_status": "PENDING_GEORREFERENCING",
+      "rainfall_status": "NOT_PAIRED",
+      "evaluation_split": "UNASSIGNED",
+      "note": ""
+    }
+  ],
+  "excluded_evidence": [
+    {
+      "source_id": "coen-999-2023",
+      "locator": "Página 24, tabla ACTIVACIÓN DE QUEBRADAS 18 MAYO 2023",
+      "reason": "Fecha posterior a la emisión 9 abril 2023; hora rotulada HORA DEL REPORTE. No corregir silenciosamente a marzo ni usar como hora de inicio."
+    },
+    {
+      "source_id": "coen-1669-2025",
+      "locator": "HECHOS: 6 mayo 2025, 16:10",
+      "reason": "Deslizamiento, no huaico; no mezclar mecanismos."
+    },
+    {
+      "source_id": "coen-999-2023",
+      "locator": "Menciones de ausencia de afectaciones en San Borja, Surco y Miraflores",
+      "reason": "Ausencia de daños distritales no demuestra ausencia de activación en un cauce; no sirve como ventana negativa de quebrada."
+    }
+  ]
+}

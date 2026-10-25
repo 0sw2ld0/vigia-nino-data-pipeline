@@ -26,6 +26,7 @@ import regional_accumulation
 import watersheds
 import exposure
 import calibration
+import historical_events
 from areas import Area, load_areas
 
 
@@ -202,7 +203,12 @@ def main() -> int:
     write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
     write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)
     calibration_report = calibration.evaluate_windows([])
-    calibration_report['scope'] = 'Lima: no reviewed positive/negative labelled windows available'
+    calibration_report['scope'] = 'Lima: documented positives exist; no reviewed paired rainfall evaluation windows or negatives available'
+    try:
+        calibration_report['historical_inventory'] = historical_events.summarize(historical_events.load_inventory(config.ROOT))
+    except Exception as exc:
+        warn(f'Inventario histórico no disponible: {exc!r}')
+        calibration_report['historical_inventory'] = {'state':'unavailable'}
     write_atomic(args.out / 'calibration_report.json', calibration_report)
     regional_report['serialization_validation_seconds'] = round(time.monotonic()-regional_started,3)
     regional_report['json_bytes'] = (args.out/'status_lima.json').stat().st_size
