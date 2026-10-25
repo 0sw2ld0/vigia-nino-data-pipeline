@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "LIM-CHO-QUIRIO",
+        "name": "Quebrada Quirio",
+        "region": "Lima",
+        "district": "Lurigancho-Chosica",
+        "threshold_profile": "SIERRA_LIMA",
+        "centroid_lat": -11.905,
+        "centroid_lon": -76.685,
+        "geometry_status": "PROVISIONAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -76.72,
+              -11.94
+            ],
+            [
+              -76.65,
+              -11.94
+            ],
+            [
+              -76.65,
+              -11.87
+            ],
+            [
+              -76.72,
+              -11.87
+            ],
+            [
+              -76.72,
+              -11.94
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "LAL-TRU-SANIDELFONSO",
+        "name": "Quebrada San Idelfonso",
+        "region": "La Libertad",
+        "district": "El Porvenir",
+        "threshold_profile": "COSTA_NORTE",
+        "centroid_lat": -8.03,
+        "centroid_lon": -78.94,
+        "geometry_status": "PROVISIONAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -78.99,
+              -8.08
+            ],
+            [
+              -78.89,
+              -8.08
+            ],
+            [
+              -78.89,
+              -7.98
+            ],
+            [
+              -78.99,
+              -7.98
+            ],
+            [
+              -78.99,
+              -8.08
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "PIU-PIU-CUENCAMEDIA",
+        "name": "Cuenca media-alta del río Piura",
+        "region": "Piura",
+        "district": "Chulucanas / Tambogrande",
+        "threshold_profile": "COSTA_NORTE",
+        "centroid_lat": -5.05,
+        "centroid_lon": -80.12,
+        "geometry_status": "PROVISIONAL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.3,
+              -5.25
+            ],
+            [
+              -79.9,
+              -5.25
+            ],
+            [
+              -79.9,
+              -4.85
+            ],
+            [
+              -80.3,
+              -4.85
+            ],
+            [
+              -80.3,
+              -5.25
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+.pytest_cache/
+public/
+backtest/out/
+backtest_run.log

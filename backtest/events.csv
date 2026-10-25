@@ -1,0 +1,10 @@
+# Eventos reales para comparar con el semáforo. Solo eventos con fuente pública.
+# event_time: hora MÁS TARDÍA posible del evento, en hora de Perú (-05:00).
+# uncertainty_hours: cuántas horas antes pudo ocurrir (p. ej. "en la tarde" = 6, "ese día" = 24).
+# Las líneas que empiezan con # se ignoran. Revisa cada fila antes de sacar conclusiones.
+quebrada_id,event_time,uncertainty_hours,source_url,note
+PIU-PIU-CUENCAMEDIA,2023-03-09T23:59-05:00,24,https://www.exitosanoticias.pe/exitosa-peru/piura-desborda-rio-piura-zona-santa-rosa-chulucanas-n94468,Desborde del río Piura en Santa Rosa (Chulucanas). Solo se conoce el día.
+# Pendientes de verificar:
+# LIM-CHO-QUIRIO,2023-03-16T18:00-05:00,6,https://larepublica.pe/sociedad/2023/03/16/uno-mas-y-desaparecemos-chosica-soporta-cuarto-huaico-y-piden-apoyo-con-remocion-de-escombros-lluvias-en-lima-947744,Huaico de la quebrada Chacrasana en la tarde. Confirmar si Chacrasana cae dentro del polígono de Quirio.
+# PIU-PIU-CUENCAMEDIA,2023-03-14T23:59-05:00,48,https://eltiempo.pe/local/piura-suspenden-clases-en-colegios-privados-ante-crecida-del-rio/,Crecida e inundación en Tambogrande (13-14 mar). Fecha exacta sin confirmar; Tambogrande queda justo fuera del polígono.
+# LAL-TRU-SANIDELFONSO: no se encontró un evento confirmado en 2023 (el video viral de marzo 2023 era de 2017, según https://elbuho.pe/2023/03/falso-video-de-personas-en-panico-ante-caida-de-huaico-en-trujillo-no-es-actual-verificacion/).

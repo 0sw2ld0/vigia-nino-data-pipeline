@@ -1,0 +1,68 @@
+name: Piloto Lima - observación de lluvia
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lima-nowcast-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Pruebas sin red
+        run: python -m pytest -q
+      - name: Procesar datos reales de Lima
+        run: python src/main_nowcast.py --region Lima
+      - name: Resumen de la ejecución
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          report = json.loads(Path("public/v1/run_report.json").read_text())
+          feed = json.loads(Path("public/v1/status_quebradas.json").read_text())
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as out:
+              out.write("# Piloto Lima · experimental\n\n")
+              out.write(f"Procesamiento: {report['processing_seconds']} s. JSON: {report['status_json_bytes']} bytes.\n\n")
+              out.write("Áreas provisionales y umbrales sin calibrar. No es un aviso oficial.\n\n")
+              for q in feed["quebradas"]:
+                  obs = q["observation"]
+                  out.write(f"- {q['name']}: lluvia máxima {obs['rain_rate_max_mmh']} mm/h; barrido {obs['scan_time_utc']}; estado {q['status']['level']}.\n")
+              out.write("\nAvisos oficiales: enlaces únicamente; su ingestión aún no está implementada.\n")
+          PY
+      - name: Preparar publicación
+        run: touch public/.nojekyll
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: public
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Publicar JSON
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
