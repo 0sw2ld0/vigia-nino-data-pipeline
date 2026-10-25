@@ -233,3 +233,12 @@ GLM 31,965 s. Se verificaron 12.462 lecturas de lluvia y rayos, conservando los 
 oficiales independientes. El JSON comprimido transfirió 262.139 bytes en la comprobación.
 El tiempo dominante fue la descarga y lectura de GLM; se mantiene en Actions para que
 la observación satelital continúe aunque el Mac duerma. No fue necesario moverla al Mac.
+
+
+## Acumulado y contexto hidrográfico de Lima
+
+El feed regional incluye 72 horas completas de precipitación modelada GFS vía Open-Meteo para los 12.462 tramos IGN. Comparte 64 muestras de una malla de 0,25° y conserva la fecha original de descarga en caché por hora UTC. El modelo (~13 km) y la malla (~28 km) no resuelven cada quebrada: el acumulado es contexto y no activa umbrales regionales sin calibración. Valores faltantes se publican null.
+
+`watersheds_lima.geojson` publica 30 unidades oficiales ANA completas; 12.460 tramos se asocian por al menos 90 % de longitud dentro de una sola unidad. Es pertenencia espacial, no una microcuenca aportante delineada por elevación. `exposure_lima.geojson` incluye seis componentes de una única huella histórica documentada de Quirio, evento del 23/03/2015, informe INGEMMET A6680. No representa afectación futura ni cobertura total de Lima. Cada capa conserva procedencia y fecha; no se redistribuyen los PDF. Los metadatos oficiales consultados no declaran licencia explícita.
+
+`calibration_report.json` mantiene INSUFFICIENT_EVIDENCE: faltan ventanas positivas y negativas verificadas de Lima. El evaluador evita compartir episodios entre entrenamiento y validación y nunca selecciona umbrales automáticamente. En iOS y Android, Mapa → Lluvia, avisos y cauces de toda Lima muestra estos contextos y permite activar las capas del tramo seleccionado.

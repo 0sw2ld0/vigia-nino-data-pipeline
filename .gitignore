@@ -6,3 +6,4 @@ backtest/out/
 backtest_run.log
 
 diagnostics/
+.cache/

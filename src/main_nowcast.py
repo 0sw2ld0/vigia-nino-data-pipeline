@@ -22,6 +22,10 @@ import openmeteo
 import official_warnings
 import risk
 import lima
+import regional_accumulation
+import watersheds
+import exposure
+import calibration
 from areas import Area, load_areas
 
 
@@ -127,6 +131,24 @@ def main() -> int:
     lightning_seconds = time.monotonic()-lightning_started
 
     accum = openmeteo.fetch_rain_72h(areas, now)
+    regional_accum_started = time.monotonic()
+    regional_accum = regional_accumulation.fetch_regional_accumulation(
+        regional_areas, now, config.ROOT / '.cache' / 'regional-accumulation.json')
+    regional_accum_seconds = time.monotonic() - regional_accum_started
+    context_started = time.monotonic()
+    try:
+        units, watershed_assignments, watershed_report = watersheds.load_catalog(config.ROOT)
+        basin_layer = {'type':'FeatureCollection', 'features':watersheds.map_features(units, watershed_report['retrieved_at_utc'])}
+    except Exception as exc:
+        warn(f"Catálogo ANA no disponible: {exc!r}")
+        watershed_assignments, watershed_report = {}, {'state':'unavailable'}
+        basin_layer = {'type':'FeatureCollection', 'features':[]}
+    try:
+        exposure_layer = exposure.get_export(config.ROOT)
+    except Exception as exc:
+        warn(f"Huellas documentadas no disponibles: {exc!r}")
+        exposure_layer = {'type':'FeatureCollection', 'features':[], 'coverage':{'state':'unavailable'}}
+    context_seconds = time.monotonic() - context_started
 
     notice_started = time.monotonic()
     channels_path = config.ROOT / "data_static" / "monitored_channels.geojson"
@@ -169,9 +191,19 @@ def main() -> int:
 
     write_atomic(args.out / "status_quebradas.json", feed)
     regional_started = time.monotonic()
-    regional_feed, regional_report = lima.build_feed(config.ROOT, feed, notices, notice_report, rain, lightning)
+    regional_feed, regional_report = lima.build_feed(
+        config.ROOT, feed, notices, notice_report, rain, lightning,
+        accumulation=regional_accum.values,
+        accumulation_context=regional_accum.report['context'],
+        accumulation_retrieved_at=regional_accum.report['retrieved_at_utc'],
+        watershed_context=watershed_assignments)
     jsonschema.Draft202012Validator(schema).validate(regional_feed)
     write_atomic(args.out / "status_lima.json", regional_feed)
+    write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
+    write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)
+    calibration_report = calibration.evaluate_windows([])
+    calibration_report['scope'] = 'Lima: no reviewed positive/negative labelled windows available'
+    write_atomic(args.out / 'calibration_report.json', calibration_report)
     regional_report['serialization_validation_seconds'] = round(time.monotonic()-regional_started,3)
     regional_report['json_bytes'] = (args.out/'status_lima.json').stat().st_size
     write_atomic(args.out / "run_report.json", {
@@ -183,6 +215,9 @@ def main() -> int:
         "rain_areas_with_data": sum(rain.per_area.get(a.id) is not None for a in areas),
         "lightning_areas_with_data": sum(lightning.get(a.id) is not None for a in areas),
         "model_accumulation_areas_with_data": sum(accum.get(a.id) is not None for a in areas),
+        "regional_accumulation": {**regional_accum.report, 'processing_seconds':round(regional_accum_seconds,3)},
+        "watersheds":watershed_report, "exposure":exposure_layer.get('coverage'),
+        "calibration":calibration_report, "context_layers_seconds":round(context_seconds,3),
         "official_notices": notice_report,
         "lima_coverage":regional_report, "official_download_and_matching_seconds":round(notice_seconds,3),
         "observation_timings_seconds":{'geometry':round(geometry_seconds,3),'rrqpe_download_and_sampling':round(rain_seconds,3),'glm_download_and_counting':round(lightning_seconds,3)},

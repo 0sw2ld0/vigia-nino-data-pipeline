@@ -24,6 +24,14 @@ jobs:
           cache: pip
       - name: Instalar dependencias
         run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Hora UTC para caché del acumulado
+        id: accum-hour
+        run: echo "hour=$(date -u +%Y%m%d%H)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/regional-accumulation.json
+          key: regional-gfs-v1-${{ runner.os }}-${{ steps.accum-hour.outputs.hour }}
+          restore-keys: regional-gfs-v1-${{ runner.os }}-
       - name: Pruebas sin red
         run: python -m pytest -q
       - name: Procesar datos reales de Lima

@@ -11,6 +11,20 @@ from test_official_warnings import fixture, PAGE, NOW
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_regional_model_is_context_and_preserves_zero_and_provenance():
+    base = {'processed_at_utc':official.iso(NOW),'quebradas':[]}
+    feed, report = lima.build_feed(ROOT,base,{}, {'state':'unavailable'},
+        accumulation={'IGN-343130':0.0}, accumulation_context='GFS modeled, not observed',
+        accumulation_retrieved_at='2026-10-24T23:00:00Z')
+    zone = next(q for q in feed['quebradas'] if q['id']=='IGN-343130')
+    assert zone['observation']['rain_accum_72h_mm']==0.0
+    assert zone['observation']['rain_accum_72h_retrieved_at_utc']=='2026-10-24T23:00:00Z'
+    assert zone['status']['level']=='UNKNOWN'
+    missing = next(q for q in feed['quebradas'] if q['id']!='IGN-343130')
+    assert missing['observation']['rain_accum_72h_retrieved_at_utc'] is None
+    assert report['accumulation_segments_with_data']==1
+
+
 def test_every_lima_segment_is_in_feed_without_invented_rain_or_safe_status():
     data, _ = fixture()
     channels = official.load_channels(ROOT/'data_static/monitored_channels.geojson')

@@ -153,6 +153,8 @@
               "source"
             ],
             "properties": {
+              "rain_accum_72h_context": {"type":["string","null"],"description":"Modelo, resolución y alcance espacial del acumulado; no equivale a medición en la microcuenca."},
+              "rain_accum_72h_retrieved_at_utc": {"type":["string","null"],"format":"date-time","description":"Consulta original del proveedor del acumulado; no se renueva al reutilizar caché."},
               "sampling_method": {"type":"string","enum":["REFERENCE_CHANNEL_CORRIDOR"],"description":"Franja experimental de observación; no es una cuenca ni un área de afectación."},
               "sampling_radius_m": {"type":"number","minimum":1,"description":"Distancia nominal de la franja en metros. El píxel puede ser mayor y, para áreas subpíxel, se usa el centro más cercano."},
               "scan_time_utc": {
@@ -217,6 +219,21 @@
               "advice": {
                 "type": "string"
               }
+            }
+          },
+          "watershed": {
+            "type":["object","null"],
+            "description":"Unidad hidrográfica publicada asociada por pertenencia espacial. No prueba que sea la microcuenca aportante del tramo.",
+            "required":["unit_id","name","source_name","source_url","area_km2","channel_coverage_fraction","assignment","limitation"],
+            "properties":{
+              "unit_id":{"type":"string","minLength":1},
+              "name":{"type":"string","minLength":1},
+              "source_name":{"type":"string","minLength":1},
+              "source_url":{"type":"string","format":"uri","pattern":"^https://"},
+              "area_km2":{"type":"number","exclusiveMinimum":0},
+              "channel_coverage_fraction":{"type":"number","minimum":0.9,"maximum":1},
+              "assignment":{"type":"string","minLength":1},
+              "limitation":{"type":"string","minLength":1}
             }
           },
           "official_notice": {

@@ -1,0 +1,224 @@
+{
+  "retrieved_at": "2026-10-25",
+  "service_url": "https://sig.cenepred.gob.pe/sigrid/rest/services/CARTOGRAFIA_DE_PELIGROS/MapServer/5020200",
+  "layer_metadata": {
+    "name": "Áreas de exposición",
+    "id": 5020200,
+    "description": "La informacion es la recopilacion de datos de los diferentes informes técnicos y/o estudios que se ejecutan, se cuenta con areas de peligros geológicos en los distritos de Lurigancho, Rimac, Ventanilla, San Mateo(Dpto. Lima), Cajamarca(Dpto.Cajamarca), Cusco(Dpto. Cusco), Huánuco(Dpto. Huánuco) y en el Dpto. San Martín.\nFuente: CENEPRED, INDECI, INGEMMET, INEI (Informacion de Poblacion y Vivienda en areas afectadas por Huayco en la quebrada Rayos de Sol-Lurigancho), GORE Callao, MP Cusco, MD Rimac.",
+    "copyrightText": "",
+    "geometryType": "esriGeometryPolygon",
+    "fields": [
+      {
+        "name": "objectid",
+        "type": "esriFieldTypeInteger",
+        "alias": "objectid",
+        "domain": null
+      },
+      {
+        "name": "ubi_dep",
+        "type": "esriFieldTypeString",
+        "alias": "Departamento_ubi",
+        "length": 2,
+        "domain": null
+      },
+      {
+        "name": "ubi_prov",
+        "type": "esriFieldTypeString",
+        "alias": "Provincia_ubi",
+        "length": 4,
+        "domain": null
+      },
+      {
+        "name": "ubi_dist",
+        "type": "esriFieldTypeString",
+        "alias": "Distrito_ubi",
+        "length": 6,
+        "domain": null
+      },
+      {
+        "name": "id",
+        "type": "esriFieldTypeString",
+        "alias": "Departamento_ubi",
+        "length": 2,
+        "domain": null
+      },
+      {
+        "name": "st_area_shape_",
+        "type": "esriFieldTypeString",
+        "alias": "Fuente (logo)",
+        "length": 50,
+        "domain": null
+      },
+      {
+        "name": "nom_dep",
+        "type": "esriFieldTypeString",
+        "alias": "Departamento",
+        "length": 25,
+        "domain": null
+      },
+      {
+        "name": "nom_prov",
+        "type": "esriFieldTypeString",
+        "alias": "Provincia",
+        "length": 50,
+        "domain": null
+      },
+      {
+        "name": "nom_dist",
+        "type": "esriFieldTypeString",
+        "alias": "Distrito",
+        "length": 50,
+        "domain": null
+      },
+      {
+        "name": "nom_lugar",
+        "type": "esriFieldTypeString",
+        "alias": "Lugar",
+        "length": 150,
+        "domain": null
+      },
+      {
+        "name": "tipo",
+        "type": "esriFieldTypeString",
+        "alias": "Fuente",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "descrip",
+        "type": "esriFieldTypeString",
+        "alias": "Descripción",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "fecha_doc",
+        "type": "esriFieldTypeDate",
+        "alias": "Fecha del documento",
+        "length": 8,
+        "domain": null
+      },
+      {
+        "name": "fuente",
+        "type": "esriFieldTypeString",
+        "alias": "Fuente",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "fuente_log",
+        "type": "esriFieldTypeString",
+        "alias": "Fuente (logo)",
+        "length": 50,
+        "domain": null
+      },
+      {
+        "name": "url",
+        "type": "esriFieldTypeString",
+        "alias": "url",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "url_img",
+        "type": "esriFieldTypeString",
+        "alias": "url_img",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "fecha_ed",
+        "type": "esriFieldTypeDate",
+        "alias": "fecha_ed",
+        "length": 8,
+        "domain": null
+      },
+      {
+        "name": "operador",
+        "type": "esriFieldTypeString",
+        "alias": "Operador",
+        "length": 15,
+        "domain": null
+      },
+      {
+        "name": "url1",
+        "type": "esriFieldTypeString",
+        "alias": "url1",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "url1_img",
+        "type": "esriFieldTypeString",
+        "alias": "url1_img",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "url2",
+        "type": "esriFieldTypeString",
+        "alias": "url2",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "url2_img",
+        "type": "esriFieldTypeString",
+        "alias": "url2_img",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "observ",
+        "type": "esriFieldTypeString",
+        "alias": "Observaciones",
+        "length": 250,
+        "domain": null
+      },
+      {
+        "name": "shape",
+        "type": "esriFieldTypeGeometry",
+        "alias": "shape",
+        "domain": null
+      },
+      {
+        "name": "oculto",
+        "type": "esriFieldTypeString",
+        "alias": "oculto",
+        "length": 200,
+        "domain": null
+      },
+      {
+        "name": "objectid_1",
+        "type": "esriFieldTypeOID",
+        "alias": "objectid_1",
+        "domain": null
+      },
+      {
+        "name": "tip_peligr",
+        "type": "esriFieldTypeString",
+        "alias": "tip_peligr",
+        "length": 25,
+        "domain": null
+      },
+      {
+        "name": "peligro_es",
+        "type": "esriFieldTypeString",
+        "alias": "peligro_es",
+        "length": 50,
+        "domain": null
+      }
+    ]
+  },
+  "source_query": "where=nom_lugar='Quebrada Quirio'&outFields=*&outSR=4326&f=geojson",
+  "included_source_object_ids": [
+    1818
+  ],
+  "selection_reason": "descrip=Flujo del 23-03-15; excluye flujos antiguos, depósitos coluviales, 2012 y geometrías sin evento explícito.",
+  "source_sha256": "87801fe1638b44bac3fc4d0ce22d1670376e984045384adaf52cb3c8eda50122",
+  "study_pdf_sha256": "1322b0b4f271910253146ba26b79a903d2203bc81a7cdd91cc616738f1ede115",
+  "study_pdf_bytes": 14003746,
+  "study_visual_check": "Portada A6680; evento23/03/2015, Rayos deSol/Quirio/Cashahuacra, INGEMMET, abril2015. PDF escaneado71páginas. No validación científica.",
+  "study_date_note": "2015-04-02 es fecha_doc del servicio; la portada solo declara abril2015.",
+  "license": "La capa no declara licencia (copyrightText vacío). Servicio público consultable; no asumir dominio público ni autorización general de redistribución."
+}

@@ -1,0 +1,11 @@
+{
+  "source_url": "https://geosnirh.ana.gob.pe/server/rest/services/ws_UnidadesHidro/MapServer/1",
+  "retrieved_at_utc": "2026-10-25T04:25:52.852710+00:00",
+  "publisher": "Autoridad Nacional del Agua (ANA)",
+  "selection": "Full official units intersecting Lima boundary; no administrative clipping",
+  "units": 30,
+  "sha256": "47270cf062b8571c8b9874d236bbf8b58a5e63fcf3ab46e61611faeb211bd1f2",
+  "compressed_bytes": 1951848,
+  "license": "No explicit redistribution license stated in ArcGIS metadata; preserve ANA attribution; public query access is not a license grant",
+  "method": "Published Pfafstetter hydrographic units; not per-channel upstream catchments or flood extents"
+}
