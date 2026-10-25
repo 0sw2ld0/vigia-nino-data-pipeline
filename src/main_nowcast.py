@@ -21,6 +21,7 @@ import goes
 import openmeteo
 import official_warnings
 import risk
+import lima
 from areas import Area, load_areas
 
 
@@ -119,26 +120,29 @@ def main() -> int:
 
     accum = openmeteo.fetch_rain_72h(areas, now)
 
+    notice_started = time.monotonic()
+    channels_path = config.ROOT / "data_static" / "monitored_channels.geojson"
+    collector_url = os.environ.get("SENAMHI_COLLECTOR_URL")
     try:
-        notices, notice_report = official_warnings.fetch_notices(config.ROOT / "data_static" / "monitored_channels.geojson", now)
-    except Exception as exc:
-        warn(f"Consulta directa SENAMHI no disponible: {exc!r}")
-        try:
-            channels_path = config.ROOT / "data_static" / "monitored_channels.geojson"
-            collector_url = os.environ.get("SENAMHI_COLLECTOR_URL")
+        if collector_url:
             try:
-                if not collector_url:
-                    raise ValueError('Collector URL is not configured')
                 notices, notice_report = official_warnings.fetch_collector_snapshot(collector_url, channels_path, now)
             except Exception as collector_exc:
-                warn(f"Colector no disponible: {collector_exc!r}")
-                notices, notice_report = official_warnings.read_verified_snapshot(
-                    config.ROOT / "data_static" / "senamhi_verified_snapshot.json.gz", channels_path, now)
+                warn(f"Colector no disponible: {collector_exc!r}; se intenta consulta directa.")
+                notices, notice_report = official_warnings.fetch_notices(channels_path, now)
+        else:
+            notices, notice_report = official_warnings.fetch_notices(channels_path, now)
+    except Exception as exc:
+        warn(f"Consulta SENAMHI no disponible: {exc!r}")
+        try:
+            notices, notice_report = official_warnings.read_verified_snapshot(
+                config.ROOT / "data_static" / "senamhi_verified_snapshot.json.gz", channels_path, now)
             warn("Se utiliza copia oficial con fecha de consulta original y vencimiento.")
         except Exception as backup_exc:
             warn(f"Sin respaldo vigente: {backup_exc!r}")
             notices, notice_report = {}, {"state":"unavailable", "assigned_zones":[]}
     feed = build_feed(areas, now, rain, lightning, accum, notices)
+    notice_seconds = time.monotonic() - notice_started
     if args.region:
         for q in feed["quebradas"]:
             q["status"]["headline"] = q["status"]["headline"].replace("en la parte alta", "en el área observada")
@@ -156,6 +160,12 @@ def main() -> int:
         return 1
 
     write_atomic(args.out / "status_quebradas.json", feed)
+    regional_started = time.monotonic()
+    regional_feed, regional_report = lima.build_feed(config.ROOT, feed, notices, notice_report)
+    jsonschema.Draft202012Validator(schema).validate(regional_feed)
+    write_atomic(args.out / "status_lima.json", regional_feed)
+    regional_report['serialization_validation_seconds'] = round(time.monotonic()-regional_started,3)
+    regional_report['json_bytes'] = (args.out/'status_lima.json').stat().st_size
     write_atomic(args.out / "run_report.json", {
         "processed_at_utc": iso(now), "finished_at_utc": iso(datetime.now(timezone.utc)),
         "processing_seconds": round(time.monotonic() - started, 2),
@@ -166,6 +176,7 @@ def main() -> int:
         "lightning_areas_with_data": sum(lightning.get(a.id) is not None for a in areas),
         "model_accumulation_areas_with_data": sum(accum.get(a.id) is not None for a in areas),
         "official_notices": notice_report,
+        "lima_coverage":regional_report, "official_download_and_matching_seconds":round(notice_seconds,3),
         "status_json_bytes": (args.out / "status_quebradas.json").stat().st_size,
     })
 

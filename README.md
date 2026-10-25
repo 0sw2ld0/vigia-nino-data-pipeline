@@ -102,8 +102,10 @@ datos oficiales públicos al archivo `senamhi_verified_snapshot.json.gz` de la r
 `senamhi-live`, mediante la sesión local de `gh`; no publica credenciales ni crea commits
 por cada descarga. Si falla, conserva la hora original de la última copia válida.
 
-Actions intenta primero la fuente oficial y después la copia indicada por
-`SENAMHI_COLLECTOR_URL`. La copia vence al superar seis horas de antigüedad o al vencer
+Con `SENAMHI_COLLECTOR_URL` configurado, Actions intenta primero la copia del Mac y
+solo intenta la fuente oficial si esa copia falla. Sin esa variable consulta directamente
+SENAMHI. Se evita esperar el timeout conocido desde GitHub en cada ejecución.
+La copia vence al superar seis horas de antigüedad o al vencer
 el aviso. La app continúa consumiendo el mismo JSON de Pages. Una descarga nueva llega
 a la app después del siguiente procesamiento y despliegue de Actions.
 
@@ -138,3 +140,40 @@ Para desinstalar, detener primero el recolector desde el panel y cerrar el panel
 Descargar su agente con `launchctl bootout gui/$(id -u)/dev.cuycoders.vigia.senamhi.panel`
 y retirar las dos entradas `dev.cuycoders.vigia.senamhi*.plist` de
 `~/Library/LaunchAgents`, la app y las carpetas de runtime/registros indicadas arriba.
+
+### Primera cobertura regional: toda Lima
+
+`status_lima.json` utiliza el mismo contrato que `status_quebradas.json`, con IDs IGN
+estables `IGN-<objectid>` y `official_source_retrieved_at_utc`. Seleccionamos **12.462
+tramos** del catálogo nacional que intersectan el departamento 15 (Lima), incluida Lima
+Metropolitana, mediante el [límite administrativo de INGEMMET](https://geocatmin.ingemmet.gob.pe/arcgis/rest/services/SERV_CARTOGRAFIA_DEMARCACION_WGS84/MapServer/0).
+La selección no incluye Callao como región; conserva la geometría completa de los tramos
+que cruzan el límite. Un tramo no equivale a una quebrada física única.
+
+`data_static/lima_channels.json.gz` conserva coordenadas e identificadores originales;
+`lima-index.json` enumera IDs y sectores locales para que las apps reutilicen la cartografía
+nacional ya instalada, sin duplicar geometrías en el paquete de la app. El exportador
+reproducible está en `tools/cartography/export_lima.py` del repositorio privado. La copia
+del límite y su hash quedan registrados junto al catálogo.
+
+El cruce usa un índice espacial STRtree y exige que un mismo nivel oficial cubra al menos
+el 90 % del tramo. La consulta del aviso 297-2026 asociaba **1.799 tramos: 977 naranja y
+822 amarillo**; estos números corresponden a esa consulta, no son constantes futuras.
+Los tramos sin asociación no son zonas seguras y los sectores del aviso no son áreas de
+inundación. No se inventan mediciones para los 12.462 tramos: la lluvia continúa en las
+dos áreas provisionales del piloto, en `status_quebradas.json`; el feed regional mantiene
+las observaciones en null y el estado de lluvia UNKNOWN, incluso cuando hay aviso oficial.
+
+En las apps: Mapa → **Avisos y cauces de toda Lima**. Permite buscar por nombre en toda la
+selección, filtrar avisos vigentes, consultar la fuente y buscar cerca del GPS o del centro
+del mapa dentro de 50 km aproximados a puntos del cauce. Renderiza hasta 100 resultados.
+Los cauces asociados se colorean con el nivel del aviso. Sin red se conserva el último
+feed, pero las asociaciones y colores se ocultan al superar seis horas desde la consulta
+original o vencer el aviso; nunca se renueva esa fecha al abrir la app.
+
+`run_report.json` registra duración total, descarga y cruce oficial, validación/serialización
+del JSON regional, tamaño y conteos. Primera medición local: proceso completo **13,03 s**,
+consulta de copia y cruce **1,313 s** (descarga **0,767 s**, cruce **0,543 s**), preparación
+regional **0,788 s**, JSON **7.894.390 bytes**. Son mediciones de esa ejecución; Actions
+tiene además preparación de entorno, pruebas y publicación. El recolector también registra
+sus métricas en `state/status.json` y las muestra en el panel.

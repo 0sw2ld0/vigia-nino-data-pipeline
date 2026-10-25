@@ -3,17 +3,30 @@ import html
 import gzip
 import json
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 import requests
 from shapely.geometry import shape
 from shapely.ops import unary_union
+from shapely.strtree import STRtree
 
 PAGE_URL = 'https://www.senamhi.gob.pe/?p=aviso-activacion-quebrada'
 WFS_URL = 'https://idesep.senamhi.gob.pe/geoserver/g_acti_quebrada/ows'
 LIMA_TZ = timezone(timedelta(hours=-5))
 MONTHS = {name: i+1 for i, name in enumerate(['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'])}
 LEVELS = {'Nivel 2': ('YELLOW','amarillo',2), 'Nivel 3': ('ORANGE','naranja',3), 'Nivel 4': ('RED','rojo',4)}
+
+
+def load_channels(path):
+    channels = json.loads(path.read_text())
+    regional = path.parent/'lima_channels.json.gz'
+    if regional.exists():
+        channels['features'] += [
+            {'type':'Feature','properties':{'zone_id':f'IGN-{row[0]}'},
+             'geometry':{'type':'MultiLineString','coordinates':row[2]}}
+            for row in json.loads(gzip.decompress(regional.read_bytes()))]
+    return channels
 
 def iso(dt):
     return dt.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -48,21 +61,26 @@ def assign_notices(metadata, collection, channels, now):
     date = metadata['from'].date().isoformat()
     if any(f['properties'].get('fecha','')[:10] != date for f in rows):
         raise ValueError('Official geometry date does not match current advisory')
+    polygons, properties = [], []
+    for feature in rows:
+        p = feature['properties']
+        if p.get('nombdep') != 'LIMA' or p.get('nivel') not in LEVELS:
+            continue
+        polygon = shape(feature['geometry'])
+        if polygon.is_empty or not polygon.is_valid:
+            raise ValueError('Invalid SENAMHI advisory geometry')
+        polygons.append(polygon)
+        properties.append(p)
+    tree = STRtree(polygons)
     notices = {}
     for channel in channels['features']:
         line = shape(channel['geometry'])
         if line.is_empty or not line.is_valid or line.length <= 0:
             raise ValueError('Invalid reference channel')
         grouped = {}
-        for f in rows:
-            p = f['properties']
-            if p.get('nombdep') != 'LIMA' or p.get('nivel') not in LEVELS:
-                continue
-            polygon = shape(f['geometry'])
-            if polygon.is_empty or not polygon.is_valid:
-                raise ValueError('Invalid SENAMHI advisory geometry')
-            if polygon.intersects(line):
-                grouped.setdefault(p['nivel'],[]).append((polygon,p))
+        for index in tree.query(line, predicate='intersects'):
+            p, polygon = properties[index], polygons[index]
+            grouped.setdefault(p['nivel'],[]).append((polygon,p))
         # >=90% coverage of this reference segment is required. Never infer from a shared name/district.
         matches=[]
         for raw, group in grouped.items():
@@ -93,7 +111,7 @@ def fetch_notices(channels_path, now):
         'CQL_FILTER':"nombdep='LIMA'"},timeout=45)
     response.raise_for_status()
     collection = response.json()
-    channels = json.loads(channels_path.read_text())
+    channels = load_channels(channels_path)
     notices = assign_notices(metadata,collection,channels,now)
     return notices, {**report,'state':'verified','source_features':len(collection['features']),'assigned_zones':sorted(notices)}
 
@@ -112,7 +130,7 @@ def verify_snapshot(snapshot, channels_path, now):
         'until':datetime.fromisoformat(m['until'].replace('Z','+00:00')).astimezone(LIMA_TZ)}
     if not metadata['from'] <= now < metadata['until']:
         raise ValueError('Official backup is outside advisory validity')
-    notices = assign_notices(metadata, snapshot['collection'], json.loads(channels_path.read_text()), now)
+    notices = assign_notices(metadata, snapshot['collection'], load_channels(channels_path), now)
     stamp = retrieved.astimezone(LIMA_TZ).strftime('%d/%m/%Y %H:%M')
     for notice in notices.values():
         notice['body'] += f' Copia oficial verificada el {stamp} (hora de Perú); consulta directa temporalmente no disponible.'
@@ -122,9 +140,13 @@ def verify_snapshot(snapshot, channels_path, now):
 
 
 def fetch_collector_snapshot(url, channels_path, now):
+    started = time.perf_counter()
     response = requests.get(url, params={'checked_at':iso(now)}, timeout=30)
     response.raise_for_status()
     if len(response.content) > 5_000_000:
         raise ValueError('Collector snapshot exceeds size limit')
+    downloaded = time.perf_counter()
     notices, report = verify_snapshot(json.loads(gzip.decompress(response.content)), channels_path, now)
-    return notices, {**report, 'state':'verified_collector', 'collector_url':url}
+    return notices, {**report, 'state':'verified_collector', 'collector_url':url,
+        'download_seconds':round(downloaded-started,3),
+        'spatial_matching_seconds':round(time.perf_counter()-downloaded,3)}

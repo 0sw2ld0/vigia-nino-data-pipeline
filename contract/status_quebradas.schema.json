@@ -12,6 +12,11 @@
     "quebradas"
   ],
   "properties": {
+    "official_source_retrieved_at_utc": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Hora original de consulta de la fuente oficial para la cobertura regional. Nunca se renueva al leer la copia; las apps descartan asociaciones tras seis horas incluso sin conexión."
+    },
     "schema_version": {
       "type": "string",
       "pattern": "^1\\.[0-9]+$"
@@ -111,7 +116,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^[A-Z]{3}-[A-Z]{3}-[A-Z0-9]+$"
+            "pattern": "^(?:[A-Z]{3}-[A-Z]{3}-[A-Z0-9]+|IGN-[0-9]+)$"
           },
           "name": {
             "type": "string"

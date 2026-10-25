@@ -48,6 +48,8 @@ jobs:
                   if notice:
                       out.write(f"  - SENAMHI {notice['level']}: {notice['geographic_scope']}; vence {notice['valid_until_utc']}.\n")
               out.write(f"\nVerificación de avisos: {report['official_notices']['state']}. Independiente de la lluvia satelital.\n")
+              out.write(f"\nToda Lima: {report['lima_coverage']['segments']} tramos; {report['lima_coverage']['assigned_segments']} con aviso asociado.\n")
+              out.write(f"Consulta y cruce oficial: {report['official_download_and_matching_seconds']} s. Preparación del JSON regional: {report['lima_coverage']['serialization_validation_seconds']} s.\n")
           PY
       - name: Preparar publicación
         run: touch public/.nojekyll

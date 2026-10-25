@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import time
 from datetime import datetime, timezone
 
 import requests
@@ -27,6 +28,7 @@ def write_state(directory, **updates):
 
 
 def collect(now, channels_path):
+    started = time.perf_counter()
     response = requests.get(official.PAGE_URL, timeout=25)
     response.raise_for_status()
     metadata = official.parse_metadata(response.content.decode('utf-8'))
@@ -43,7 +45,14 @@ def collect(now, channels_path):
     snapshot = {'retrieved_at_utc':official.iso(now), 'metadata':{
         **metadata, 'from':official.iso(metadata['from']), 'until':official.iso(metadata['until'])},
         'collection':collection}
-    official.verify_snapshot(snapshot, channels_path, now)
+    matching_started = time.perf_counter()
+    notices, _ = official.verify_snapshot(snapshot, channels_path, now)
+    snapshot['collector_metrics'] = {
+        'download_seconds':round(matching_started-started,3),
+        'spatial_matching_seconds':round(time.perf_counter()-matching_started,3),
+        'total_fetch_validation_seconds':round(time.perf_counter()-started,3),
+        'lima_segments':sum(f['properties']['zone_id'].startswith('IGN-') for f in official.load_channels(channels_path)['features']),
+        'assigned_lima_segments':sum(key.startswith('IGN-') for key in notices)}
     return snapshot
 
 
@@ -74,7 +83,8 @@ def main():
         write_state(args.out, running=False, last_error=None,
                     last_success_utc=official.iso(datetime.now(timezone.utc)),
                     source_retrieved_at_utc=snapshot['retrieved_at_utc'], advisory=snapshot['metadata']['id'],
-                    features=len(snapshot['collection']['features']), published=args.publish)
+                    features=len(snapshot['collection']['features']), published=args.publish,
+                    collector_metrics=snapshot['collector_metrics'])
         print(json.dumps({'retrieved_at_utc':snapshot['retrieved_at_utc'],
             'advisory':snapshot['metadata']['id'], 'features':len(snapshot['collection']['features']),
             'bytes':target.stat().st_size, 'published':args.publish}), flush=True)
