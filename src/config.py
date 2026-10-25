@@ -44,6 +44,7 @@ _PROVISIONAL_THRESHOLDS = {
 }
 
 THRESHOLD_PROFILES = {
+    "LIMA_OBSERVATION": dict(_PROVISIONAL_THRESHOLDS),
     # Quebradas pequeñas de la sierra de Lima (Chosica, Huaycoloro). En el backtest de Yaku
     # (marzo 2023) los días con huaicos reportados el satélite marcó solo 8-10 mm/h sobre Quirio,
     # así que el rojo de 20 mm/h probablemente es demasiado alto aquí.

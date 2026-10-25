@@ -13,6 +13,8 @@ import numpy as np
 import shapely
 import xarray as xr
 from pyproj import Transformer
+from shapely.geometry import box, Point
+from shapely.strtree import STRtree
 
 import config
 from areas import Area
@@ -134,6 +136,17 @@ def rain_from_key(fs, key: str, areas: list[Area]) -> RainResult:
         transformer, h = _geos_transformer(ds)
         inverse = Transformer.from_crs(transformer.target_crs, "EPSG:4326", always_xy=True)
         per_area: dict[str, RainStats | None] = {}
+        if len(areas) > 100:
+            bounds = np.asarray([area.geometry.bounds for area in areas])
+            envelope = Area('WINDOW','Window','Lima','','LIMA_OBSERVATION',0,0,
+                box(bounds[:,0].min(),bounds[:,1].min(),bounds[:,2].max(),bounds[:,3].max()))
+            rows, cols = _window(ds,transformer,h,envelope)
+            rain = ds['RRQPE'][rows,cols].values.astype('float64')
+            dqf = ds['DQF'][rows,cols].values
+            xx, yy = np.meshgrid(ds['x'].values[cols]*h,ds['y'].values[rows]*h)
+            lon, lat = inverse.transform(xx,yy)
+            per_area = batch_rain_stats(rain,dqf,np.asarray(lon),np.asarray(lat),areas)
+            return RainResult(scan_time=_parse_iso(ds.attrs['time_coverage_end']),s3_key=key,per_area=per_area)
         for area in areas:
             rows, cols = _window(ds, transformer, h, area)
             rain = ds["RRQPE"][rows, cols].values.astype("float64")
@@ -147,13 +160,47 @@ def rain_from_key(fs, key: str, areas: list[Area]) -> RainResult:
     return RainResult(scan_time=scan_time, s3_key=key, per_area=per_area)
 
 
+def batch_rain_stats(rain, dqf, lon, lat, areas):
+    """One regional raster window; exact polygon-center tests via spatial index.
+
+    Matches area_rain_stats, including its nearest-center fallback for subpixel areas.
+    Missing or degraded pixels never become zero rainfall.
+    """
+    valid_coordinates = np.isfinite(lon.ravel()) & np.isfinite(lat.ravel())
+    values = rain.ravel()[valid_coordinates]
+    quality = dqf.ravel()[valid_coordinates]
+    if not valid_coordinates.any():
+        return {area.id:None for area in areas}
+    tree = STRtree(shapely.points(lon.ravel()[valid_coordinates],lat.ravel()[valid_coordinates]))
+    results = {}
+    for area in areas:
+        indices = tree.query(area.geometry,predicate='contains')
+        if not len(indices):
+            indices = np.asarray([tree.nearest(Point(area.centroid_lon,area.centroid_lat))])
+        selected = values[indices]
+        good = (quality[indices]==0) & np.isfinite(selected) & (selected>=0)
+        if good.sum()/len(indices) < config.MIN_GOOD_PIXEL_FRACTION:
+            results[area.id] = None
+        else:
+            usable = selected[good]
+            results[area.id] = RainStats(round(float(usable.max()),1),round(float(usable.mean()),1))
+    return results
+
+
 # ---------------------------------------------------------------------------
 # Rayos (GLM-L2-LCFA)
 # ---------------------------------------------------------------------------
 
 
 def count_flashes(lats: np.ndarray, lons: np.ndarray, areas: list[Area]) -> dict[str, int]:
-    return {a.id: int(shapely.contains_xy(a.geometry, lons, lats).sum()) for a in areas}
+    if len(areas) <= 100:
+        return {a.id: int(shapely.contains_xy(a.geometry, lons, lats).sum()) for a in areas}
+    finite = np.isfinite(lons) & np.isfinite(lats)
+    tree = STRtree([area.geometry for area in areas])
+    # One flash may legitimately be inside several overlapping observation corridors.
+    pairs = tree.query(shapely.points(lons[finite],lats[finite]),predicate='within')
+    counts = np.bincount(pairs[1],minlength=len(areas))
+    return {area.id:int(counts[index]) for index,area in enumerate(areas)}
 
 
 def read_glm(fs, areas: list[Area], now: datetime, bucket: str = config.GOES_BUCKET) -> dict[str, int | None]:

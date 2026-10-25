@@ -147,7 +147,7 @@ Descargar su agente con `launchctl bootout gui/$(id -u)/dev.cuycoders.vigia.sena
 y retirar las dos entradas `dev.cuycoders.vigia.senamhi*.plist` de
 `~/Library/LaunchAgents`, la app y las carpetas de runtime/registros indicadas arriba.
 
-### Primera cobertura regional: toda Lima
+### Etapa inicial de cobertura regional: avisos de toda Lima
 
 `status_lima.json` utiliza el mismo contrato que `status_quebradas.json`, con IDs IGN
 estables `IGN-<objectid>` y `official_source_retrieved_at_utc`. Seleccionamos **12.462
@@ -189,3 +189,39 @@ procesó el conjunto en **37,94 s**: consulta y cruce **1,311 s**, de los que el
 **1,026 s**, y generación/validación regional **2,05 s**. La descarga comprimida del JSON
 regional transfirió **242.550 bytes** (aunque descomprimido son 7.894.390 bytes).
 Con estas mediciones, el cruce permanece en Actions; no justifica trasladarlo al Mac.
+
+### Piloto ampliado: lluvia y rayos de toda Lima
+
+El feed regional ahora incluye observación satelital para los **12.462 tramos**, además
+de los avisos oficiales. `lima.observation_areas` proyecta las líneas a UTM 18S, construye
+una franja de **1.000 m** a cada lado y la devuelve a WGS84. Es un área experimental de
+muestreo, no la cuenca alta del tramo ni un área de inundación. Las franjas no se dibujan
+como zonas de riesgo y los umbrales siguen sin calibrar.
+
+Se descarga un solo archivo RRQPE para toda la ejecución. Se decodifica una única ventana
+regional y un índice espacial consulta qué centros de píxel están en cada polígono. Solo
+se aceptan DQF=0 y valores finitos no negativos, con al menos 50 % de píxeles válidos; en
+áreas subpíxel sin centros interiores se usa el centro más cercano. La franja nominal no
+implica precisión de 1 km: el [producto NOAA tiene resolución nominal de 2 km en nadir](https://www.ospo.noaa.gov/resources/documents/PUG/GS%20Series%20416-R-PUG-L2%20Plus-0349%20Vol%205%20v3.0%20final.pdf)
+y estima lluvia a partir de información satelital, no de un pluviómetro local.
+
+Los archivos GLM de la ventana de 15 minutos también se descargan una sola vez y se
+cuentan con un índice de polígonos. Un rayo puede pertenecer a varias franjas solapadas:
+no se deben sumar los conteos de los tramos para obtener un total regional. Si falta
+cobertura temporal suficiente, los conteos se publican en null. Ausencia de lectura
+de lluvia produce UNKNOWN, nunca verde. Los avisos oficiales conservan su nivel aunque
+el satélite estime cero lluvia.
+
+El acumulado modelado de 72 horas continúa solo para las dos áreas originales, sin
+extrapolarlo a otros tramos ni multiplicar consultas a Open-Meteo. En el feed regional
+permanece en null. Las apps muestran esa limitación y permiten elegir **Avisos oficiales**
+o **Lluvia estimada** para colorear los cauces, manteniendo visible el aviso oficial en
+la ficha. Los colores de lluvia caducan con el tiempo del barrido (60 minutos); los del
+aviso tienen su propia caducidad. No se representan franjas de observación como afectación.
+
+Primera prueba local ampliada: **16,01 s** de proceso completo, con 1,553 s preparando
+franjas, 4,562 s descargando/muestreando RRQPE y 7,354 s descargando/contando GLM. Ese
+barrido produjo lluvia y rayos para los 12.462 tramos, sin lluvias importantes detectadas,
+y conservó los 1.799 avisos asociados. Son resultados fechados, no condiciones permanentes.
+`run_report.json` publica ahora `observation_timings_seconds`, conteos de tramos con datos
+y distribución de niveles de lluvia, por separado de los niveles oficiales.

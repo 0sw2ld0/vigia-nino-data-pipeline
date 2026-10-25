@@ -153,6 +153,8 @@
               "source"
             ],
             "properties": {
+              "sampling_method": {"type":"string","enum":["REFERENCE_CHANNEL_CORRIDOR"],"description":"Franja experimental de observación; no es una cuenca ni un área de afectación."},
+              "sampling_radius_m": {"type":"number","minimum":1,"description":"Distancia nominal de la franja en metros. El píxel puede ser mayor y, para áreas subpíxel, se usa el centro más cercano."},
               "scan_time_utc": {
                 "type": [
                   "string",

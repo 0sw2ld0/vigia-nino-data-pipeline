@@ -50,6 +50,8 @@ jobs:
               out.write(f"\nVerificación de avisos: {report['official_notices']['state']}. Independiente de la lluvia satelital.\n")
               out.write(f"\nToda Lima: {report['lima_coverage']['segments']} tramos; {report['lima_coverage']['assigned_segments']} con aviso asociado.\n")
               out.write(f"Consulta y cruce oficial: {report['official_download_and_matching_seconds']} s. Preparación del JSON regional: {report['lima_coverage']['serialization_validation_seconds']} s.\n")
+              out.write(f"Lluvia con dato: {report['lima_coverage']['rain_segments_with_data']}; rayos con dato: {report['lima_coverage']['lightning_segments_with_data']}.\n")
+              out.write(f"Tiempos de observación: {report['observation_timings_seconds']}.\n")
           PY
       - name: Preparar publicación
         run: touch public/.nojekyll

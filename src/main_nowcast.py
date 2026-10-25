@@ -104,19 +104,27 @@ def main() -> int:
 
     now = datetime.now(timezone.utc).replace(microsecond=0)
     areas = select_areas(load_areas(config.QUEBRADAS_GEOJSON), args.region)
+    geometry_started = time.monotonic()
+    regional_areas = lima.observation_areas(config.ROOT)
+    observation_areas = areas + regional_areas
+    geometry_seconds = time.monotonic()-geometry_started
     fs = s3fs.S3FileSystem(anon=True)
 
+    rain_started = time.monotonic()
     try:
-        rain = goes.read_rrqpe(fs, areas, now)
+        rain = goes.read_rrqpe(fs, observation_areas, now)
     except Exception as exc:  # noqa: BLE001 — una fuente caída no debe tumbar el resto
         warn(f"RRQPE no disponible: {exc!r}")
-        rain = goes.RainResult(scan_time=None, s3_key=None, per_area={a.id: None for a in areas})
+        rain = goes.RainResult(scan_time=None, s3_key=None, per_area={a.id: None for a in observation_areas})
+    rain_seconds = time.monotonic()-rain_started
 
+    lightning_started = time.monotonic()
     try:
-        lightning = goes.read_glm(fs, areas, now)
+        lightning = goes.read_glm(fs, observation_areas, now)
     except Exception as exc:  # noqa: BLE001
         warn(f"GLM no disponible: {exc!r}")
-        lightning = {a.id: None for a in areas}
+        lightning = {a.id: None for a in observation_areas}
+    lightning_seconds = time.monotonic()-lightning_started
 
     accum = openmeteo.fetch_rain_72h(areas, now)
 
@@ -161,7 +169,7 @@ def main() -> int:
 
     write_atomic(args.out / "status_quebradas.json", feed)
     regional_started = time.monotonic()
-    regional_feed, regional_report = lima.build_feed(config.ROOT, feed, notices, notice_report)
+    regional_feed, regional_report = lima.build_feed(config.ROOT, feed, notices, notice_report, rain, lightning)
     jsonschema.Draft202012Validator(schema).validate(regional_feed)
     write_atomic(args.out / "status_lima.json", regional_feed)
     regional_report['serialization_validation_seconds'] = round(time.monotonic()-regional_started,3)
@@ -177,6 +185,7 @@ def main() -> int:
         "model_accumulation_areas_with_data": sum(accum.get(a.id) is not None for a in areas),
         "official_notices": notice_report,
         "lima_coverage":regional_report, "official_download_and_matching_seconds":round(notice_seconds,3),
+        "observation_timings_seconds":{'geometry':round(geometry_seconds,3),'rrqpe_download_and_sampling':round(rain_seconds,3),'glm_download_and_counting':round(lightning_seconds,3)},
         "status_json_bytes": (args.out / "status_quebradas.json").stat().st_size,
     })
 
