@@ -36,7 +36,7 @@ jobs:
           restore-keys: regional-gfs-v3-peru-${{ runner.os }}-
       - name: Pruebas sin red
         run: python -m pytest -q
-      - name: Procesar Lima y avisos oficiales de Piura y Tumbes
+      - name: Procesar capas nacionales y avisos oficiales de Perú
         env:
           SENAMHI_COLLECTOR_URL: https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/senamhi_verified_snapshot.json.gz
         run: python src/main_nowcast.py --region Lima
@@ -48,7 +48,7 @@ jobs:
           report = json.loads(Path("public/v1/run_report.json").read_text())
           feed = json.loads(Path("public/v1/status_quebradas.json").read_text())
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as out:
-              out.write("# Piloto Lima · experimental\n\n")
+              out.write("# CuyVigia · cobertura nacional\n\n")
               out.write(f"Procesamiento: {report['processing_seconds']} s. JSON: {report['status_json_bytes']} bytes.\n\n")
               out.write("Áreas provisionales y umbrales sin calibrar. No es un aviso oficial.\n\n")
               for q in feed["quebradas"]:
@@ -59,7 +59,7 @@ jobs:
                       out.write(f"  - SENAMHI {notice['level']}: {notice['geographic_scope']}; vence {notice['valid_until_utc']}.\n")
               out.write(f"\nVerificación de avisos: {report['official_notices']['state']}. Independiente de la lluvia satelital.\n")
               out.write(f"\nToda Lima: {report['lima_coverage']['segments']} tramos; {report['lima_coverage']['assigned_segments']} con aviso asociado.\n")
-              out.write(f"Norte: {report['north_coverage']['segments']} tramos; {report['north_coverage']['assigned_segments']} con aviso asociado. Sin lluvia incorporada.\n")
+              out.write(f"Norte: {report['north_coverage']['segments']} tramos; {report['north_coverage']['assigned_segments']} con aviso asociado. Sin métricas de lluvia por tramo incorporadas.\n")
               out.write(f"Consulta y cruce oficial: {report['official_download_and_matching_seconds']} s. Preparación del JSON regional: {report['lima_coverage']['serialization_validation_seconds']} s.\n")
               out.write(f"Lluvia con dato: {report['lima_coverage']['rain_segments_with_data']}; rayos con dato: {report['lima_coverage']['lightning_segments_with_data']}.\n")
               out.write(f"Tiempos de observación: {report['observation_timings_seconds']}.\n")

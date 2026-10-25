@@ -253,7 +253,7 @@ El feed regional incluye 72 horas completas de precipitación modelada GFS vía 
 
 ## Temperatura del aire
 
-`v1/air_temperature.json`: temperatura a 2 m modelada por GFS vía Open-Meteo, válida para la hora UTC indicada. Muestreo cada 0,25° (~28 km), 153 celdas recortadas a Lima, Piura y Tumbes. No son mediciones de estaciones ni alertas térmicas. Datos ausentes son `null`; un fallo de esta fuente no impide publicar las demás. Caché horaria de una copia, sin acumular barridos. Atribución: Open-Meteo y NOAA GFS, CC BY 4.0; API gratuita para el piloto no comercial según sus condiciones.
+`v1/air_temperature.json`: temperatura a 2 m modelada por NOAA GFS, válida para la hora UTC indicada. Cobertura nacional en 2.396 zonas a 0,25° (~28 km), con procedencia del ciclo y plazo del pronóstico. No son mediciones de estaciones ni alertas térmicas. Datos ausentes son `null`. Caché horaria de una copia, sin acumular barridos. El acumulado anterior de Lima conserva su fuente Open-Meteo.
 
 ## Cobertura nacional
 

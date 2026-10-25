@@ -154,6 +154,7 @@ def verify_snapshot(snapshot, channels_path, now):
         notice['body'] += f' Copia oficial verificada el {stamp} (hora de Perú); consulta directa temporalmente no disponible.'
     return notices, {'state':'verified_snapshot','id':metadata['id'],'source':PAGE_URL,
         'source_retrieved_at_utc':iso(retrieved),'valid_from_utc':iso(metadata['from']),'valid_until_utc':iso(metadata['until']),
+        'reference_segment_count':sum(f['properties']['zone_id'].startswith('IGN-') for f in channels['features']),
         'snapshot_max_age_hours':6,'department_scope':scope,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features']),'excluded_invalid_reference_ids':channels.get('excluded_invalid_reference_ids',[])}
 
 

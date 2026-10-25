@@ -46,12 +46,13 @@ def collect(now, channels_path):
         **metadata, 'from':official.iso(metadata['from']), 'until':official.iso(metadata['until'])},
         'collection':collection}
     matching_started = time.perf_counter()
-    notices, _ = official.verify_snapshot(snapshot, channels_path, now)
+    notices, verification_report = official.verify_snapshot(snapshot, channels_path, now)
     snapshot['collector_metrics'] = {
         'download_seconds':round(matching_started-started,3),
         'spatial_matching_seconds':round(time.perf_counter()-matching_started,3),
         'total_fetch_validation_seconds':round(time.perf_counter()-started,3),
-        'pilot_segments':274590 if (channels_path.parent/'peru_channels.json.gz').exists() else sum(f['properties']['zone_id'].startswith('IGN-') for f in official.load_channels(channels_path)['features']),
+        'pilot_segments':verification_report['reference_segment_count'],
+        'excluded_invalid_reference_segments':len(verification_report.get('excluded_invalid_reference_ids',[])),
         'assigned_pilot_segments':sum(key.startswith('IGN-') for key in notices)}
     return snapshot
 
