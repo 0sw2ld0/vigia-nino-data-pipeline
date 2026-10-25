@@ -1,0 +1,17 @@
+{
+  "retrieved_at": "2026-10-25",
+  "service": "https://geosnirh.ana.gob.pe/server/rest/services/P%C3%BAblico/FajaMarginal/MapServer/127",
+  "request": {
+    "where": "(UPPER(NOMDIST) = 'CHACLACAYO' OR UPPER(NOMDIST) = 'LURIGANCHO') AND TIPCUA='Quebrada'",
+    "outFields": "*",
+    "outSR": 4326
+  },
+  "pagination": "Queried objectIds and downloaded batches of 500; checked complete result counts. Initial broader district LIKE query returned 2008 records; 5 San Juan De Lurigancho points were explicitly excluded before the crosswalk.",
+  "selected_markers": 2003,
+  "district_counts": {
+    "Lurigancho": 1172,
+    "Chaclacayo": 831
+  },
+  "groups": 60,
+  "source_gzip_sha256": "dd8b3f4a2386c89551e1dc0011ffcd89e2ba45cb9cc8d8b193fb863bf6d583cd"
+}

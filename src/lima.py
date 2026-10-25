@@ -50,7 +50,7 @@ def build_feed(root, base_feed, notices, notice_report, rain=None, lightning=Non
         for key in ['headline','advice']:
             status[key] = status[key].replace('en la parte alta','en el entorno observado del cauce')
         zones.append({'id':zone_id, 'name':names.get(zone_id,{}).get('name',channel_names.UNKNOWN),
-            'region':'Lima', 'district':notice['geographic_scope'] if notice else 'Catálogo IGN · Lima',
+            'region':'Lima', 'district':names.get(zone_id,{}).get('district') or (notice['geographic_scope'] if notice else 'Catálogo IGN · Lima'),
             'centroid':{'lat':lat,'lon':lon},
             'observation':{'scan_time_utc':rain.scan_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ') if stats and rain.scan_time else None,
                 'source':'NOAA GOES-19 · observación experimental en franja de 1 km del tramo IGN',

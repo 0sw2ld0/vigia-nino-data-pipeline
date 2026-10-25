@@ -45,11 +45,15 @@ def test_bundled_crosswalk_preserves_ids_geometry_and_pending_case():
     data=load_catalog(ROOT);names=data['names']
     rows=json.loads(gzip.decompress((ROOT/'data_static/lima_channels.json.gz').read_bytes()))
     ids={f'IGN-{r[0]}' for r in rows}
-    assert len(names)==2454 and set(names)<=ids
+    assert len(names)==2455 and set(names)<=ids
     assert sum(n['state']=='CARTOGRAPHIC_MATCH' for n in names.values())==251
     assert 'IGN-13131' not in names
     assert names['IGN-12186']['name']=='Quebrada Huaycoloro'
     assert names['IGN-11834']['name']=='Quebrada Quirio'
     assert all(n['evidence'] and all(e['coverage']>=.98 for e in n['evidence']) for n in names.values() if n['state']=='CARTOGRAPHIC_MATCH')
-    # Hazard/ANA documentary sources cannot become name assignments.
-    assert {n['source'] for n in names.values()} <= {'ign100','named100','named500'}
+    assert names['IGN-12230']['name']=='Quebrada Huascarán'
+    assert names['IGN-12230']['state']=='DOCUMENTED_BANK_REVIEW'
+    assert 'IGN-344767' not in names  # Nearby tributary is not renamed.
+    # Ordinary ANA/hazard proximity still cannot assign names; this named
+    # exception is pinned to a separate plan-and-coordinate review.
+    assert {n['source'] for n in names.values()} <= {'ign100','named100','named500','ana_huascaran_2025'}

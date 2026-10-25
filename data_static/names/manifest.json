@@ -2,34 +2,40 @@
   "retrieved_at": "2026-10-25",
   "segments": 12462,
   "original_named_segments": 2203,
-  "named_segments": 2454,
-  "new_named_segments": 251,
-  "pending_segments": 10008,
+  "named_segments": 2455,
+  "new_named_segments": 252,
+  "pending_segments": 10007,
   "states": {
     "SOURCE_IGN": 2203,
-    "CARTOGRAPHIC_MATCH": 251
+    "CARTOGRAPHIC_MATCH": 251,
+    "DOCUMENTED_BANK_REVIEW": 1
   },
   "source_features": {
     "named100": 2203,
     "named500": 20,
     "ana_fajas": 10,
     "sigrid_places": 97,
-    "sigrid_exposure": 475
+    "sigrid_exposure": 475,
+    "ana_hitos": 2003
   },
   "source_sha256": {
     "named100": "f5e4537ccd51e10712084b89ab261cb9aef74fbe329c487a1af5df9c1e5a8e90",
     "named500": "e39f8ca898344bbf3bb33f7b0bc55cec6f36c757e98bb731a143deaac2d580be",
     "ana_fajas": "6503c0a4d6a503f244eaf0c59e0fb023c8d391cab21cb7eedfaa2de3b1d7e952",
     "sigrid_places": "babffeea2da998c5b13664ba06205d91b27c7fd35dfffc18874f0f1b72b8590f",
-    "sigrid_exposure": "9f3d457e880a8ce2cdef408833eb54ecf302eea8704e78411ebe1297d228d6fb"
+    "sigrid_exposure": "9f3d457e880a8ce2cdef408833eb54ecf302eea8704e78411ebe1297d228d6fb",
+    "ana_hitos": "dd8b3f4a2386c89551e1dc0011ffcd89e2ba45cb9cc8d8b193fb863bf6d583cd"
   },
-  "crosswalk_sha256": "99b338c21e56458e9eef14e6bfcb5e91f15f151c203c7c70c91c25f25a626188",
+  "crosswalk_sha256": "9b00dee1019f4bb0a6271118a755282153b42f5af4c5776be6bdff985aa8416b",
   "conflicts": 29,
   "documentary_references": 97,
-  "ana_name_agreements": 7,
+  "ana_name_agreements": 8,
   "study_channel_intersections": 463,
-  "method": "At least 98% of a >=100 m IGN segment within 2 m of named official line in EPSG:32718; one distinct normalized name; never replace conflicting IGN name. No nearest, polygon or point naming.",
-  "limitation": "Crossed names are cartographic matches, not field verification. 2 m is coordinate matching tolerance, not map accuracy. MINAM hydrography and IGN may share Peru Digital origin; not independent confirmations. Segments are not unique quebradas. GeoQuebradas district risk layer has no channel-name field. ANA points and hazard polygons are review evidence only.",
+  "method": "At least 98% of a >=100 m IGN segment within 2 m of named official line in EPSG:32718; one distinct normalized name; never replace conflicting IGN name. No nearest, polygon or point naming. Separate DOCUMENTED_BANK_REVIEW: exact reviewed IGN/ANA pair, >=90% inside ordered bank markers and >=95% within their 20 m comparison margin, plus manual plan and coordinate-table validation. No propagation to tributaries.",
+  "limitation": "Crossed names are cartographic matches, not field verification. 2 m is coordinate matching tolerance, not map accuracy. MINAM hydrography and IGN may share Peru Digital origin; not independent confirmations. Segments are not unique quebradas. GeoQuebradas district risk layer has no channel-name field. ANA points and hazard polygons are review evidence only. The reviewed bank exception is not a centreline identity guarantee, legal boundary reconstruction or flood prediction. Its 20 m comparison margin is not nominal map accuracy.",
   "license": "Public official query access; metadata does not state an explicit redistribution license. Preserve attribution.",
-  "crosswalk_bytes": 417381
+  "crosswalk_bytes": 418490,
+  "ana_bank_groups": 60,
+  "ana_reviewed_associations": 1,
+  "ana_review_sha256": "43bf92b9d7619a6b14a01df77f83d6e77cd76fe1a5f9f07e6bd0cf9849108c05"
 }
