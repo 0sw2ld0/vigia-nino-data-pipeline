@@ -53,6 +53,12 @@ def from_dataset(ds, key, now, regions):
     xx,yy=np.meshgrid(ds['x'].values[cols]*height,ds['y'].values[rows]*height)
     lon,lat=Transformer.from_crs(transform.target_crs,4326,always_xy=True).transform(xx,yy)
     good=np.isin(masks,list(ACCEPTED)) & (quality==0) & np.isfinite(lon) & np.isfinite(lat)
+    inverse=Transformer.from_crs(transform.target_crs,4326,always_xy=True)
+    def edges(values):
+        values=np.asarray(values,dtype=float)*height
+        if len(values)<2 or not np.all(np.isfinite(values)): raise ValueError('Invalid native satellite grid')
+        return np.r_[values[0]-(values[1]-values[0])/2,(values[:-1]+values[1:])/2,values[-1]+(values[-1]-values[-2])/2]
+    xedges=edges(ds['x'].values);yedges=edges(ds['y'].values)
     coverage={};detections=[]
     row_offset=rows.start or 0;col_offset=cols.start or 0
     for region,boundary in regions.items():
@@ -66,7 +72,10 @@ def from_dataset(ds, key, now, regions):
             cloud_pixel_fraction=round(float((inside & (quality==2)).sum()/total),6))
         for row,col in zip(*np.where(chosen)):
             code=int(masks[row,col]);source_row=int(row+row_offset);source_col=int(col+col_offset)
-            detections.append(dict(id=f'G19-{scan:%Y%m%dT%H%M%S}-{source_row}-{source_col}',
+            corners=[inverse.transform(xedges[c],yedges[r]) for r,c in [(source_row,source_col),(source_row,source_col+1),(source_row+1,source_col+1),(source_row+1,source_col),(source_row,source_col)]]
+            if not np.all(np.isfinite(corners)): raise ValueError('Invalid native pixel footprint')
+            footprint=[[round(float(lo),6),round(float(la),6)] for lo,la in corners]
+            detections.append(dict(pixel_footprint=footprint,id=f'G19-{scan:%Y%m%dT%H%M%S}-{source_row}-{source_col}',
                 lat=round(float(lat[row,col]),6),lon=round(float(lon[row,col]),6),region=region,
                 observed_at_utc=stamp(scan),mask=code,quality=0,
                 category=ACCEPTED[code],confirmation='UNCONFIRMED',
@@ -75,7 +84,7 @@ def from_dataset(ds, key, now, regions):
     feed=empty(now)
     feed.update(state='AVAILABLE',scan_time_utc=stamp(scan),source_key=key,regions=coverage,
         detections=detections,nominal_resolution_m_at_nadir=2000,
-        context='Detecciones térmicas de alta calidad y alta probabilidad en el último barrido; no incendios confirmados. Se excluyen baja/media probabilidad, contaminación por nubes y calidad inválida. La posición es el centro del píxel, de resolución nominal 2 km en el nadir y mayor fuera de él. Sin detecciones no significa ausencia de incendios; las nubes y el tamaño del fuego pueden ocultarlos. No delimita área quemada ni riesgo para una vivienda.')
+        context='Detecciones térmicas de alta calidad y alta probabilidad en el último barrido; no incendios confirmados. Se excluyen baja/media probabilidad, contaminación por nubes y calidad inválida. La posición es el centro del píxel, de resolución nominal 2 km en el nadir y mayor fuera de él. Sin detecciones no significa ausencia de incendios; las nubes y el tamaño del fuego pueden ocultarlos. Las manchas representan los píxeles nativos con detección de calor, no la superficie quemada ni riesgo para una vivienda.')
     return feed
 
 

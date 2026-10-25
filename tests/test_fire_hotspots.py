@@ -49,3 +49,15 @@ def test_changed_product_semantics_and_uncovered_region_are_rejected(monkeypatch
     with pytest.raises(ValueError,match='semantics'):fire.from_dataset(ds,'key',NOW,regions)
     ds,regions=fixture(monkeypatch)
     with pytest.raises(ValueError,match='No thermal pixels'):fire.from_dataset(ds,'key',NOW,{'Tumbes':box(-80,-4,-79,-3)})
+
+def test_pixel_footprints_follow_native_grid_edges(monkeypatch):
+    from shapely.geometry import Polygon,Point
+    ds,regions=fixture(monkeypatch)
+    rows=fire.from_dataset(ds,'key',NOW,regions)['detections']
+    for d in rows:
+        ring=d['pixel_footprint']
+        assert len(ring)==5 and ring[0]==ring[-1]
+        assert Polygon(ring).contains(Point(d['lon'],d['lat']))
+    first=rows[0]['pixel_footprint']
+    assert first[0]==pytest.approx([-81.05,-4.799992],abs=0.0001)
+    assert first[2]==pytest.approx([-80.95,-5.000008],abs=0.0001)

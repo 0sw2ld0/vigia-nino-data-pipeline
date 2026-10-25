@@ -246,3 +246,7 @@ El feed regional incluye 72 horas completas de precipitación modelada GFS vía 
 ## Avisos del piloto norte
 
 `public/v1/status_norte.json` incorpora 8 179 tramos IGN únicos de Piura y Tumbes (6 807 y 1 409, con 37 compartidos). Los avisos se asocian espacialmente a sectores SENAMHI vigentes, sin afirmar activaciones confirmadas. La capa de lluvia satelital cubre Lima, Piura y Tumbes sobre el mapa (GOES-19 RRQPE, muestreo de 2 km, calidad válida). Las métricas de lluvia por tramo, rayos, acumulados, cuencas y áreas de afectación del norte aún no se incorporan: los valores de observación son null y el estado de lluvia UNKNOWN. Una copia limitada a Lima no verifica la cobertura norteña. El recolector conserva un único snapshot actualizado, sin archivos históricos por ejecución.
+
+## Focos de calor
+
+`public/v1/fire_hotspots.json` publica el último barrido NOAA GOES-19 ABI-L2-FDCF para Lima, Piura y Tumbes. Solo se exportan máscaras 10, 11, 13, 30, 31 y 33 con DQF=0, contrastadas con sus significados en el producto. Se excluyen baja/media probabilidad y contaminación por nubes. Cada detección permanece UNCONFIRMED. La posición es el centro de un píxel satelital, no un perímetro ni una ubicación exacta del incendio. Incluye fecha original, clave de origen y fracciones de cobertura útil/nubes por departamento. Una descarga fallida produce UNAVAILABLE, no un resultado seco o seguro. No se requieren claves ni una conexión entrante al Mac.
