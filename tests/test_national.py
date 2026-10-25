@@ -46,3 +46,13 @@ def test_gfs_decoder_checks_height_validity_units_and_grid_orientation():
         ec.codes_set(h,'level',10)
         with pytest.raises(ValueError,match='field or grid'):decode_message(ec.codes_get_message(h),datetime(2026,10,25,20,tzinfo=timezone.utc),cells)
     finally:ec.codes_release(h)
+
+def test_country_overview_deduplicates_segments_without_claiming_incidents(tmp_path):
+    static=tmp_path/'data_static';static.mkdir()
+    (static/'departments.json').write_text(json.dumps({'departments':[{'name':'Lima','key':'lima'},{'name':'Cusco','key':'cusco'}]}))
+    notice={'id':'A1','level':'ORANGE','geographic_scope':'SECTOR','valid_from_utc':'2026-10-25T00:00:00Z','valid_until_utc':'2026-10-26T00:00:00Z','url':'https://www.senamhi.gob.pe/'}
+    feed={'processed_at_utc':'2026-10-25T20:00:00Z','official_source_retrieved_at_utc':'2026-10-25T19:00:00Z','quebradas':[{'official_notice':notice}]*100}
+    result=national.build_overview(tmp_path,{'lima':feed,'cusco':feed},{'lima':{'source_scope_verified':True},'cusco':{'source_scope_verified':False}})
+    assert result['regions'][0]['associated_segments']==100
+    assert result['regions'][0]['notices']==[notice]
+    assert result['regions'][1]['notices']==[] and result['regions'][1]['source_retrieved_at_utc'] is None

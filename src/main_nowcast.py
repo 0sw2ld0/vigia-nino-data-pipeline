@@ -230,6 +230,7 @@ def main() -> int:
         if region_key == 'lima':continue
         jsonschema.Draft202012Validator(schema).validate(country_feed)
         write_atomic(args.out/f'status_{region_key}.json',country_feed)
+    write_atomic(args.out/'advisories_peru.json',national.build_overview(config.ROOT,country_feeds,country_report))
     write_atomic(args.out/'coverage_peru.json',{'processed_at_utc':iso(now),'regions':country_report})
     write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
     write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)

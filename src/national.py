@@ -24,3 +24,21 @@ def build_feeds(root,base,notices,report):
         result[key]={**base,'quebradas':zones,'official_source_retrieved_at_utc':retrieved if valid else None,'global_notice':dict(severity='INFO',title=f'Cobertura nacional · {name}',body='Este archivo contiene solo los tramos con aviso oficial asociado; la cartografía completa se guarda localmente. Lluvia, temperatura y calor se consultan en capas separadas. Sin aviso asociado no significa zona segura. Acumulados por tramo, cuencas detalladas y áreas de afectación no incorporados fuera de los estudios disponibles.',url=None)}
         coverage[key]=dict(segments=d['segmentCount'],assigned_segments=len(zones),source_scope_verified=valid,levels=dict(Counter(q['official_notice']['level'] for q in zones)))
     return result,coverage
+
+
+def build_overview(root, feeds, coverage):
+    """Small country overview; each marker represents a department, never an incident."""
+    catalog=json.loads((root/'data_static/departments.json').read_text())['departments']
+    regions=[]
+    for d in catalog:
+        feed=feeds[d['key']]
+        unique={}
+        for zone in feed['quebradas']:
+            notice=zone['official_notice']
+            key=tuple(notice.get(k) for k in ('id','level','geographic_scope','valid_from_utc','valid_until_utc','url'))
+            unique.setdefault(key,notice)
+        verified=coverage[d['key']]['source_scope_verified']
+        regions.append(dict(name=d['name'],source_scope_verified=verified,
+            source_retrieved_at_utc=feed['official_source_retrieved_at_utc'] if verified else None,
+            associated_segments=len(feed['quebradas']),notices=list(unique.values()) if verified else []))
+    return dict(version=1,processed_at_utc=next(iter(feeds.values()))['processed_at_utc'],regions=regions)
