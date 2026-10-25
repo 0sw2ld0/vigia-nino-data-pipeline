@@ -9,7 +9,7 @@ NOW=datetime(2026,10,25,0,tzinfo=timezone.utc)
 def fixture():
     polygon={'type':'Polygon','coordinates':[[[-77.1,-12.1],[-76.9,-12.1],[-76.9,-11.9],[-77.1,-11.9],[-77.1,-12.1]]]}
     channel={'type':'Feature','properties':{'zone_id':'TEST'},'geometry':{'type':'LineString','coordinates':[[-77,-12],[-76.95,-12]]}}
-    collection={'features':[{'geometry':polygon,'properties':{'fecha':'2026-10-24Z','nombdep':'LIMA','nombprov':'TEST','nombdist':'TEST','nivel':'Nivel 3'}}],'totalFeatures':1}
+    collection={'type':'FeatureCollection','features':[{'geometry':polygon,'properties':{'fecha':'2026-10-24Z','nombdep':'LIMA','nombprov':'TEST','nombdist':'TEST','nivel':'Nivel 3'}}],'totalFeatures':1}
     return collection,{'features':[channel]}
 
 def test_validity_uses_lima_timezone_and_expiry_is_exclusive():

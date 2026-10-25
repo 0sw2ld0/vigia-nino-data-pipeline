@@ -1,4 +1,4 @@
-"""Collect and validate public SENAMHI Lima sectors on a machine with source access."""
+"""Collect and replace one verified SENAMHI snapshot for Lima, Piura and Tumbes."""
 import argparse
 import fcntl
 import gzip
@@ -37,12 +37,12 @@ def collect(now, channels_path):
     response = requests.get(official.WFS_URL, params={
         'service':'WFS', 'version':'1.0.0', 'request':'GetFeature',
         'typeName':'g_acti_quebrada:view_av_activ_qdra', 'outputFormat':'application/json',
-        'srsName':'EPSG:4326', 'CQL_FILTER':"nombdep='LIMA'"}, timeout=45)
+        'srsName':'EPSG:4326', 'CQL_FILTER':official.DEPARTMENT_FILTER}, timeout=45)
     response.raise_for_status()
     collection = response.json()
-    if not collection.get('features'):
-        raise ValueError('Empty sector collection; refusing to replace last verified copy')
-    snapshot = {'retrieved_at_utc':official.iso(now), 'metadata':{
+    if collection.get('type') != 'FeatureCollection' or 'features' not in collection or 'totalFeatures' not in collection:
+        raise ValueError('Unverifiable sector collection; preserving previous copy')
+    snapshot = {'retrieved_at_utc':official.iso(now), 'department_scope':list(official.DEPARTMENTS), 'metadata':{
         **metadata, 'from':official.iso(metadata['from']), 'until':official.iso(metadata['until'])},
         'collection':collection}
     matching_started = time.perf_counter()
@@ -51,8 +51,8 @@ def collect(now, channels_path):
         'download_seconds':round(matching_started-started,3),
         'spatial_matching_seconds':round(time.perf_counter()-matching_started,3),
         'total_fetch_validation_seconds':round(time.perf_counter()-started,3),
-        'lima_segments':sum(f['properties']['zone_id'].startswith('IGN-') for f in official.load_channels(channels_path)['features']),
-        'assigned_lima_segments':sum(key.startswith('IGN-') for key in notices)}
+        'pilot_segments':sum(f['properties']['zone_id'].startswith('IGN-') for f in official.load_channels(channels_path)['features']),
+        'assigned_pilot_segments':sum(key.startswith('IGN-') for key in notices)}
     return snapshot
 
 

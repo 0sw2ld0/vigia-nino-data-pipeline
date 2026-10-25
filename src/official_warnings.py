@@ -16,16 +16,22 @@ WFS_URL = 'https://idesep.senamhi.gob.pe/geoserver/g_acti_quebrada/ows'
 LIMA_TZ = timezone(timedelta(hours=-5))
 MONTHS = {name: i+1 for i, name in enumerate(['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'])}
 LEVELS = {'Nivel 2': ('YELLOW','amarillo',2), 'Nivel 3': ('ORANGE','naranja',3), 'Nivel 4': ('RED','rojo',4)}
+DEPARTMENTS = ('LIMA', 'PIURA', 'TUMBES')
+DEPARTMENT_FILTER = "nombdep IN ('LIMA','PIURA','TUMBES')"
 
 
 def load_channels(path):
     channels = json.loads(path.read_text())
-    regional = path.parent/'lima_channels.json.gz'
-    if regional.exists():
-        channels['features'] += [
-            {'type':'Feature','properties':{'zone_id':f'IGN-{row[0]}'},
-             'geometry':{'type':'MultiLineString','coordinates':row[2]}}
-            for row in json.loads(gzip.decompress(regional.read_bytes()))]
+    seen = {f['properties']['zone_id'] for f in channels['features']}
+    for filename in ('lima_channels.json.gz', 'north_channels.json.gz'):
+        regional = path.parent/filename
+        if regional.exists():
+            for row in json.loads(gzip.decompress(regional.read_bytes())):
+                ident = f'IGN-{row[0]}'
+                if ident not in seen:
+                    channels['features'].append({'type':'Feature','properties':{'zone_id':ident},
+                        'geometry':{'type':'MultiLineString','coordinates':row[2]}})
+                    seen.add(ident)
     return channels
 
 def iso(dt):
@@ -52,11 +58,13 @@ def parse_metadata(page):
     return {'id':f'SENAMHI-AQ-{number[2]}-{number[1]}', 'number':number[1],
             'from':valid_from, 'until':valid_from+timedelta(hours=hours)}
 
-def assign_notices(metadata, collection, channels, now):
+def assign_notices(metadata, collection, channels, now, departments=('LIMA',)):
     if not metadata['from'] <= now < metadata['until']:
         return {}
+    if collection.get('type') != 'FeatureCollection' or not isinstance(collection.get('features'), list) or 'totalFeatures' not in collection:
+        raise ValueError('Unverifiable official sector collection')
     rows = collection['features']
-    if int(collection.get('totalFeatures',len(rows))) != len(rows):
+    if int(collection['totalFeatures']) != len(rows):
         raise ValueError('Truncated official warning dataset')
     date = metadata['from'].date().isoformat()
     if any(f['properties'].get('fecha','')[:10] != date for f in rows):
@@ -64,7 +72,7 @@ def assign_notices(metadata, collection, channels, now):
     polygons, properties = [], []
     for feature in rows:
         p = feature['properties']
-        if p.get('nombdep') != 'LIMA' or p.get('nivel') not in LEVELS:
+        if p.get('nombdep') not in departments or p.get('nivel') not in LEVELS:
             continue
         polygon = shape(feature['geometry'])
         if polygon.is_empty or not polygon.is_valid:
@@ -108,12 +116,12 @@ def fetch_notices(channels_path, now):
         return {}, {**report,'state':'outside_validity','assigned_zones':[]}
     response = requests.get(WFS_URL, params={'service':'WFS','version':'1.0.0','request':'GetFeature',
         'typeName':'g_acti_quebrada:view_av_activ_qdra','outputFormat':'application/json','srsName':'EPSG:4326',
-        'CQL_FILTER':"nombdep='LIMA'"},timeout=45)
+        'CQL_FILTER':DEPARTMENT_FILTER},timeout=45)
     response.raise_for_status()
     collection = response.json()
     channels = load_channels(channels_path)
-    notices = assign_notices(metadata,collection,channels,now)
-    return notices, {**report,'state':'verified','source_features':len(collection['features']),'assigned_zones':sorted(notices)}
+    notices = assign_notices(metadata,collection,channels,now,departments=DEPARTMENTS)
+    return notices, {**report,'state':'verified','department_scope':list(DEPARTMENTS),'source_features':len(collection['features']),'assigned_zones':sorted(notices)}
 
 
 def read_verified_snapshot(path, channels_path, now):
@@ -130,13 +138,18 @@ def verify_snapshot(snapshot, channels_path, now):
         'until':datetime.fromisoformat(m['until'].replace('Z','+00:00')).astimezone(LIMA_TZ)}
     if not metadata['from'] <= now < metadata['until']:
         raise ValueError('Official backup is outside advisory validity')
-    notices = assign_notices(metadata, snapshot['collection'], load_channels(channels_path), now)
+    scope = snapshot.get('department_scope', ['LIMA'])
+    if not isinstance(scope, list) or not scope or not set(scope) <= set(DEPARTMENTS):
+        raise ValueError('Unknown official snapshot department scope')
+    if any(f['properties'].get('nombdep') not in scope for f in snapshot['collection']['features']):
+        raise ValueError('Official geometry outside declared department scope')
+    notices = assign_notices(metadata, snapshot['collection'], load_channels(channels_path), now, departments=scope)
     stamp = retrieved.astimezone(LIMA_TZ).strftime('%d/%m/%Y %H:%M')
     for notice in notices.values():
         notice['body'] += f' Copia oficial verificada el {stamp} (hora de Perú); consulta directa temporalmente no disponible.'
     return notices, {'state':'verified_snapshot','id':metadata['id'],'source':PAGE_URL,
         'source_retrieved_at_utc':iso(retrieved),'valid_from_utc':iso(metadata['from']),'valid_until_utc':iso(metadata['until']),
-        'snapshot_max_age_hours':6,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features'])}
+        'snapshot_max_age_hours':6,'department_scope':scope,'assigned_zones':sorted(notices),'source_features':len(snapshot['collection']['features'])}
 
 
 def fetch_collector_snapshot(url, channels_path, now):

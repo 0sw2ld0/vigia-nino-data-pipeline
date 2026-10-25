@@ -22,6 +22,7 @@ import openmeteo
 import official_warnings
 import risk
 import lima
+import north
 import regional_accumulation
 import watersheds
 import exposure
@@ -200,6 +201,9 @@ def main() -> int:
         watershed_context=watershed_assignments)
     jsonschema.Draft202012Validator(schema).validate(regional_feed)
     write_atomic(args.out / "status_lima.json", regional_feed)
+    northern_feed, northern_report = north.build_feed(config.ROOT, feed, notices, notice_report)
+    jsonschema.Draft202012Validator(schema).validate(northern_feed)
+    write_atomic(args.out / 'status_norte.json', northern_feed)
     write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
     write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)
     if rain.overlay:
@@ -231,7 +235,7 @@ def main() -> int:
         "watersheds":watershed_report, "exposure":exposure_layer.get('coverage'),
         "calibration":calibration_report, "context_layers_seconds":round(context_seconds,3),
         "official_notices": notice_report,
-        "lima_coverage":regional_report, "official_download_and_matching_seconds":round(notice_seconds,3),
+        "lima_coverage":regional_report, "north_coverage":northern_report, "official_download_and_matching_seconds":round(notice_seconds,3),
         "observation_timings_seconds":{'geometry':round(geometry_seconds,3),'rrqpe_download_and_sampling':round(rain_seconds,3),'glm_download_and_counting':round(lightning_seconds,3)},
         "status_json_bytes": (args.out / "status_quebradas.json").stat().st_size,
     })
