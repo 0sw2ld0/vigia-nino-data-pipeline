@@ -78,3 +78,18 @@ Pisocancha usa una caja de muestreo alrededor del tramo (margen de 0,015°), exp
 ### Respaldo fechado para la prueba
 
 La conexión de GitHub Actions a `www.senamhi.gob.pe` presentó `ConnectTimeout` el 24/10/2026, aunque las fuentes respondieron desde el equipo de verificación. Para probar la presentación se conserva `data_static/senamhi_verified_snapshot.json.gz`, consultado a las 19:50 del 24/10/2026 (Perú), con los 432 sectores oficiales de Lima. Si la consulta directa falla, se usa únicamente mientras el aviso siga vigente y la consulta original tenga como máximo seis horas. No se renueva su hora al leerlo: no es una fuente viva ni una solución permanente al acceso desde GitHub. El informe publica `state: verified_snapshot` y la tarjeta informa que usa una copia con hora de consulta. Después del límite o del vencimiento, no se publica como activo. La automatización de avisos necesita resolver el acceso a SENAMHI o incorporar un canal oficial alternativo antes de operar de forma continua.
+
+
+### Diagnóstico independiente de conectividad
+
+El workflow manual `diagnose-senamhi.yml` consulta por separado el portal `www.senamhi.gob.pe`, el dominio sin www, las capacidades WFS y una muestra GeoJSON de IDESEP. Incluye una consulta de control a GitHub y un solo reintento IPv4, con tiempos acotados y validación TLS activa. No modifica los datos publicados ni sus vigencias.
+
+En la [ejecución del 24/10/2026](https://github.com/0sw2ld0/vigia-nino-data-pipeline/actions/runs/40150293249), los ejecutores estándar Ubuntu, Windows y macOS alcanzaron el control (HTTP 200), pero no pudieron conectar a SENAMHI ni a IDESEP en ninguno de los dos intentos (curl 28, timeout antes de recibir HTTP). Desde el equipo local, www y ambos servicios IDESEP respondieron HTTP 200. Esto reproduce un problema de conectividad desde los ejecutores probados; no permite atribuir con certeza el origen a un bloqueo, georrestricción, firewall o falla de enrutamiento. Cambiar únicamente de sistema operativo o repetir el mismo intento no resolvió el problema.
+
+Para comparar desde otro entorno:
+
+```sh
+python src/diagnose_sources.py --out /tmp/senamhi-connectivity.json
+```
+
+La siguiente prueba debe usar un entorno de red distinto que pueda consultar las fuentes oficiales. Un colector o intermediario pequeño en otra plataforma puede mantener el procesamiento geoespacial en Actions; antes de depender de él, comprobar conectividad desde esa plataforma. Otra posibilidad es un equipo propio encendido con tareas programadas. El respaldo fechado actual sigue siendo solo una prueba temporal.
