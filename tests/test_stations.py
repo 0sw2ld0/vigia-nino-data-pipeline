@@ -42,3 +42,14 @@ def test_station_copy_does_not_rebase_cached_retrieval(tmp_path):
     cache.write_text(json.dumps(feed))
     def forbidden(*a,**kw):raise AssertionError('cache still valid')
     assert stations.collect(now,cache,get=forbidden)==feed
+
+
+def test_local_monitor_recomputes_published_age_after_sleep():
+    import collect_senamhi
+    now=datetime(2026,10,26,0,tzinfo=timezone.utc)
+    class Response:
+        def raise_for_status(self):pass
+        def json(self):return {'layers':{'rain':{'state':'RECENT','source_at_utc':stations.stamp(now-timedelta(hours=3)),'stale_after_minutes':60}}}
+    result=collect_senamhi.audit_publication(now,get=lambda *a,**k:Response())
+    assert result['rain']['state']=='STALE'
+    assert result['rain']['age_minutes']==180

@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 import requests
 import official_warnings as official
 import stations
+import layer_health
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = '0sw2ld0/vigia-nino-data-pipeline'
@@ -74,6 +75,14 @@ def request_weather_update(gh=None, runner=None):
         return {'state':'failed','error':str(error)}
 
 
+def audit_publication(now, get=None):
+    get=get or requests.get
+    response=get('https://0sw2ld0.github.io/vigia-nino-data-pipeline/v1/layer_health.json',timeout=10)
+    response.raise_for_status()
+    layers=response.json()['layers']
+    return {name:layer_health.status(row.get('source_at_utc'),now,int(row['stale_after_minutes'])) for name,row in layers.items()}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, required=True)
@@ -119,6 +128,8 @@ def main():
         finally:
             # Weather must still update if the SENAMHI request fails.
             if args.publish:
+                try:write_state(args.out,publication_health=audit_publication(datetime.now(timezone.utc)),publication_checked_at_utc=official.iso(datetime.now(timezone.utc)),publication_error=None)
+                except Exception as error:write_state(args.out,publication_error=str(error))
                 dispatch=request_weather_update()
                 write_state(args.out,weather_dispatch=dispatch,weather_dispatch_at_utc=official.iso(datetime.now(timezone.utc)))
 

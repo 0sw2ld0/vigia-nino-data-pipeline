@@ -28,7 +28,8 @@ def parse_catalog(text):
     result=[];seen=set()
     for r in rows:
         if r.get('ico')!='M':continue
-        code=str(r['cod']);lat=float(r['lat']);lon=float(r['lon'])
+        try:code=str(r['cod']);lat=float(r['lat']);lon=float(r['lon'])
+        except (KeyError,TypeError,ValueError):continue
         if code in seen or not re.fullmatch(r'[A-Za-z0-9]{4,12}',code):continue
         if not (-19<=lat<=1 and -82<=lon<=-68):continue
         seen.add(code)
