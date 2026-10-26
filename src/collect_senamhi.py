@@ -3,6 +3,7 @@ import argparse
 import fcntl
 import gzip
 import json
+import river_advisories
 import os
 from pathlib import Path
 import shutil
@@ -107,6 +108,14 @@ def main():
                 write_state(args.out,stations_retrieved_at_utc=station_feed['retrieved_at_utc'],stations_count=len(station_feed['stations']),stations_error=None)
             except Exception as error:
                 write_state(args.out,stations_error=str(error))
+            try:
+                river_feed=river_advisories.collect(now)
+                river_path=args.out/'river_advisories_latest.json.gz'
+                river_path.write_bytes(gzip.compress(json.dumps(river_feed,ensure_ascii=False).encode(),mtime=0))
+                if args.publish:
+                    subprocess.run([shutil.which('gh') or 'gh','release','upload',TAG,str(river_path),'--repo',REPO,'--clobber'],check=True,timeout=90)
+                write_state(args.out,rivers_retrieved_at_utc=river_feed['source_retrieved_at_utc'],rivers_count=len(river_feed['notices']),rivers_error=None)
+            except Exception as error:write_state(args.out,rivers_error=str(error))
             snapshot = collect(now, ROOT/'data_static/monitored_channels.geojson')
             target = args.out/'senamhi_verified_snapshot.json.gz'
             temporary = target.with_suffix('.tmp')

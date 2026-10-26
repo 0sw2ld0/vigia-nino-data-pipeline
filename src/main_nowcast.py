@@ -32,6 +32,7 @@ import historical_events
 import fire_hotspots
 import air_temperature
 import stations
+import river_advisories
 import layer_health
 from areas import Area, load_areas
 
@@ -244,6 +245,7 @@ def main() -> int:
         write_atomic(args.out / 'rain_overlay.json', {'version':1,'state':'UNAVAILABLE','scan_time_utc':None,'context':'No current satellite raster available; missing data is not zero rainfall.'})
     station_feed=stations.fetch(now,os.environ.get('STATIONS_COLLECTOR_URL'))
     write_atomic(args.out/'stations_peru.json',station_feed)
+    write_atomic(args.out/'river_advisories.json',river_advisories.fetch(now,os.environ.get('RIVER_COLLECTOR_URL')))
     write_atomic(args.out/'layer_health.json',layer_health.build(now,iso(rain.scan_time),temperature_feed.get('valid_time_utc'),fire_feed.get('scan_time_utc'),notice_report.get('source_retrieved_at_utc'),station_feed.get('retrieved_at_utc')))
     calibration_report = calibration.evaluate_windows([])
     calibration_report['scope'] = 'Lima: documented positives exist; no reviewed paired rainfall evaluation windows or negatives available'
