@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 import requests
 import official_warnings as official
+import stations
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = '0sw2ld0/vigia-nino-data-pipeline'
@@ -88,6 +89,15 @@ def main():
         now = datetime.now(timezone.utc).replace(microsecond=0)
         write_state(args.out, last_attempt_utc=official.iso(now), running=True)
         try:
+            try:
+                station_feed=stations.collect(now,args.out/'stations-cache.json')
+                station_path=args.out/'stations_latest.json.gz'
+                station_path.write_bytes(gzip.compress(json.dumps(station_feed,ensure_ascii=False).encode(),mtime=0))
+                if args.publish:
+                    subprocess.run([shutil.which('gh') or 'gh','release','upload',TAG,str(station_path),'--repo',REPO,'--clobber'],check=True,timeout=90)
+                write_state(args.out,stations_retrieved_at_utc=station_feed['retrieved_at_utc'],stations_count=len(station_feed['stations']),stations_error=None)
+            except Exception as error:
+                write_state(args.out,stations_error=str(error))
             snapshot = collect(now, ROOT/'data_static/monitored_channels.geojson')
             target = args.out/'senamhi_verified_snapshot.json.gz'
             temporary = target.with_suffix('.tmp')
