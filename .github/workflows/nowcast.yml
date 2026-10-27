@@ -34,6 +34,11 @@ jobs:
             .cache/air-temperature.json
           key: regional-gfs-v3-peru-${{ runner.os }}-${{ steps.accum-hour.outputs.hour }}
           restore-keys: regional-gfs-v3-peru-${{ runner.os }}-
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: .cache/rain-history
+          key: rain-observed-v1-${{ github.run_id }}
+          restore-keys: rain-observed-v1-
       - name: Pruebas sin red
         run: python -m pytest -q
       - name: Procesar capas nacionales y avisos oficiales de Perú

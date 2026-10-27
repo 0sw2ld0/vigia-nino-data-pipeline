@@ -1,3 +1,4 @@
+import rain_history
 """Genera public/v1/status_quebradas.json con el contrato de las apps.
 
 Cada fuente falla por separado: si GOES-19, GLM u Open-Meteo no responden, sus campos se publican
@@ -243,6 +244,7 @@ def main() -> int:
         write_atomic(args.out / 'rain_overlay.json', overlay_manifest)
     else:
         write_atomic(args.out / 'rain_overlay.json', {'version':1,'state':'UNAVAILABLE','scan_time_utc':None,'context':'No current satellite raster available; missing data is not zero rainfall.'})
+    rain_history.publish(args.out, Path('.cache/rain-history'), now, rain.overlay)
     station_feed=stations.fetch(now,os.environ.get('STATIONS_COLLECTOR_URL'))
     write_atomic(args.out/'stations_peru.json',station_feed)
     write_atomic(args.out/'river_advisories.json',river_advisories.fetch(now,os.environ.get('RIVER_COLLECTOR_URL')))
