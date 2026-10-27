@@ -43,6 +43,7 @@ jobs:
         run: python -m pytest -q
       - name: Procesar capas nacionales y avisos oficiales de Perú
         env:
+          RAIN_HISTORY_SEED_URL: https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/rain_history_seed.json.gz
           RIVER_COLLECTOR_URL: https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/river_advisories_latest.json.gz
           STATIONS_COLLECTOR_URL: https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/stations_latest.json.gz
           SENAMHI_COLLECTOR_URL: https://github.com/0sw2ld0/vigia-nino-data-pipeline/releases/download/senamhi-live/senamhi_verified_snapshot.json.gz
