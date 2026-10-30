@@ -7,6 +7,7 @@ archivo resultante no cumple el esquema.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -99,6 +100,23 @@ def write_atomic(path: Path, data: dict) -> None:
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     os.replace(tmp, path)
+
+
+def write_versioned_layer(out: Path, stem: str, data: dict) -> dict:
+    """Publica una capa fija con un nombre que solo cambia cuando cambia su contenido.
+
+    GitHub Pages cambia el ETag en cada publicación aunque el archivo sea idéntico, así que con un
+    nombre fijo los celulares volverían a descargar varios MB cada 15 min. Con el hash en el nombre,
+    la app lo descarga una sola vez y comprueba el `sha256` del manifiesto.
+    """
+    body = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    digest = hashlib.sha256(body).hexdigest()
+    name = f"{stem}-{digest[:16]}.geojson"
+    out.mkdir(parents=True, exist_ok=True)
+    tmp = out / f"{name}.tmp"
+    tmp.write_bytes(body)
+    os.replace(tmp, out / name)
+    return {"file": name, "sha256": digest, "bytes": len(body)}
 
 
 def select_areas(areas: list[Area], region: str | None) -> list[Area]:
@@ -236,8 +254,11 @@ def main() -> int:
         write_atomic(args.out/f'status_{region_key}.json',country_feed)
     write_atomic(args.out/'advisories_peru.json',national.build_overview(config.ROOT,country_feeds,country_report))
     write_atomic(args.out/'coverage_peru.json',{'processed_at_utc':iso(now),'regions':country_report})
-    write_atomic(args.out / 'watersheds_lima.geojson', basin_layer)
-    write_atomic(args.out / 'exposure_lima.geojson', exposure_layer)
+    static_layers = {
+        'watersheds_lima': write_versioned_layer(args.out, 'watersheds_lima', basin_layer),
+        'exposure_lima': write_versioned_layer(args.out, 'exposure_lima', exposure_layer),
+    }
+    write_atomic(args.out / 'layers.json', {'version': 1, 'layers': static_layers})
     if rain.overlay:
         overlay_manifest, overlay_png = rain.overlay
         (args.out / overlay_manifest['image']).write_bytes(overlay_png)
